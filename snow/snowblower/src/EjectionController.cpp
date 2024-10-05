@@ -17,11 +17,13 @@ EjectionController::EjectionController (
     const char * direction_gpio_dev,
     const char * rotation_gpio_dev,
     const char * motor_enable_gpio_dev
+    const char* angle_gpio_dev
     )
     : _e_gpio_path(e_gpio_dev),
     _direction_gpio_path (direction_gpio_dev),
     _rotation_gpio_path (rotation_gpio_dev),
-    _motor_enable_gpio_path (motor_enable_gpio_dev) {
+    _motor_enable_gpio_path (motor_enable_gpio_dev),
+     _angle_gpio_path (angle_gpio_dev) {
     _e_gpio_fd = open(e_gpio_dev, O_RDWR);
     _direction_gpio_fd = open (direction_gpio_dev, O_RDWR);
     _rotation_gpio_fd = open (rotation_gpio_dev, O_RDWR);
@@ -64,6 +66,9 @@ EjectionController::~EjectionController () {
     }
     if (_motor_fd) {
         close(_motor_fd);
+    }
+    if (_angle_gpio_fd) {
+        close(_angle_gpio_fd);
     }
 }
 void EjectionController::loop () {

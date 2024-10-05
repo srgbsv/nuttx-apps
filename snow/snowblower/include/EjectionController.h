@@ -13,7 +13,8 @@ class EjectionController {
     EjectionController (
         const char* direction_gpio_dev,
         const char* rotation_gpio_dev,
-        const char* motor_enable_gpio_dev
+        const char* motor_enable_gpio_dev,
+        const char* angle_gpio_dev
     );
 
     ~EjectionController();
@@ -27,14 +28,14 @@ class EjectionController {
 
     private:
 
-    std::string _e_gpio_path;
-    int _e_gpio_fd = 0;
-    std::string _direction_gpio_path;
+    std::string _direction_gpio_path; //GPIO Pin for choosing direction of rotation of ejection
     int _direction_gpio_fd = 0;
-    std::string _rotation_gpio_path;
+    std::string _rotation_gpio_path; // GPIO Pin for enable rotation of ejection
     int _rotation_gpio_fd = 0;
-    std::string _motor_enable_gpio_path;
+    std::string _motor_enable_gpio_path; // GPIO Pin for motor enable //TODO make PWM control
     int _motor_enable_gpio_fd = 0;
+    std::string _angle_gpio_path; // GPIO Pin for PWM ejection angle control
+    int _angle_gpio_fd = 0;
 
     float _current_rotation;
     float _target_rotation;
