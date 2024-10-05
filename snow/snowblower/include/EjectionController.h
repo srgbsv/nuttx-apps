@@ -10,11 +10,15 @@
 class EjectionController {
     public:
 
-    EjectionController (const char* e_gpio_dev,
+    EjectionController (
         const char* direction_gpio_dev,
-        const char* rotation_gpio_dev);
+        const char* rotation_gpio_dev,
+        const char* motor_enable_gpio_dev
+    );
+
     ~EjectionController();
 
+    bool set_motor_enable(bool enable);
     bool set_angle(float angle);
     bool set_rotation(float rotation);
     void set_rotation_enable(bool run, bool clockwise);
@@ -29,14 +33,18 @@ class EjectionController {
     int _direction_gpio_fd = 0;
     std::string _rotation_gpio_path;
     int _rotation_gpio_fd = 0;
+    std::string _motor_enable_gpio_path;
+    int _motor_enable_gpio_fd = 0;
 
     float _current_rotation;
     float _target_rotation;
     float _current_angle;
     float _target_angle;
-    bool _enable_rotation;
+    bool _rotation_enable;
     bool _rotation_direction;
-    bool _enable_angle_control;
+    bool _angle_control_enable;
+    bool _motor_enable;
+
     int task_spawn (int argc, char** argv);
 };
 

@@ -14,7 +14,9 @@ if (STANDALONE_MAKE)
     # set(CMAKE_CXX_EXTENSIONS OFF)
     set(CMAKE_C_STANDARD 99)
 
-    set(SOURCE_FILES ../hellocpp/hellocpp_main.cxx)
+    set(SOURCE_FILES ../hellocpp/hellocpp_main.cxx
+            src/PwmOutput.cpp
+    )
 
     set(NUTTX_PATH "${CMAKE_SOURCE_DIR}/nuttx-export-12.6.0-RC0")
 

@@ -15,7 +15,13 @@ MainController::~MainController () {
     _ejection_controller->set_rotation_enable (false, false);
 }
 
-MainController::MainController (int argc, char** argv) {
+MainController::MainController (int argc, char** argv)
+	_pwm_input_motor(_motor_enable_in)
+	_pwm_input_rotation(_rotation_enable_in)
+	_motor_controller (_motor_enable_gpio)
+	_ejection_controller ()
+{
+
 }
 
 int MainController::main (int argc, char** argv) {

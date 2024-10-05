@@ -7,10 +7,16 @@
 
 
 class PwmInput {
+    char * devpath;
+    file fd
 
     public:
         PwmInput(char * devpath);
         ~PwmInput();
+
+        int get_duty_cycle();
+    private:
+        PwmInput();
 };
 
 

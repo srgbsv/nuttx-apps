@@ -13,8 +13,9 @@ extern pthread_mutex_t thrower_mutex;
 
 class MainController {
     private:
-    MotorController* _motor_controller;
-    EjectionController* _ejection_controller;
+    EjectionController _ejection_controller;
+    PwmInput _pwm_input_motor;
+    PwmInput _pwm_input_rotation;
 
     const char* _motor_enable_in      = "/dev/pwmin1";
     const char* _rotation_enable_in   = "/dev/pwmin2";
@@ -117,6 +118,8 @@ class MainController {
     void run ();
 
     bool init();
+
+    void check_state();
 
     public:
     MainController (int argc, char* argv[]);
