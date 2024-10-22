@@ -6,17 +6,28 @@
 #define SNOWBLOWER_PWMINPUT_H
 
 
+#include "cstdio"
+#include "string"
+
 class PwmInput {
-    char * devpath;
-    file fd
+
+    private:
+    int _fd;
+    bool _inited = false;
+    std::string _devpath;
 
     public:
-        PwmInput(char * devpath);
-        ~PwmInput();
+    PwmInput (const char* devpath);
+    PwmInput (){};
+    ~PwmInput ();
 
-        int get_duty_cycle();
-    private:
-        PwmInput();
+    bool init (const char* devpath);
+
+    [[nodiscard]] bool isInit () const {
+        return _inited;
+    }
+
+    int getDutyCycle ();
 };
 
 

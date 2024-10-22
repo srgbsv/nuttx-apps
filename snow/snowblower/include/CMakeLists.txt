@@ -1,5 +1,10 @@
 set(HEADER_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/MainController.h
         ${CMAKE_CURRENT_SOURCE_DIR}/EjectionController.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/PwmInput.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/PwmOutput.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/GpioInput.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/InputController.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/config.h
         PARENT_SCOPE
         )

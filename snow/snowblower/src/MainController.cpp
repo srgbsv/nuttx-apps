@@ -3,120 +3,170 @@
 //
 
 #include "../include/MainController.h"
-#include "../include/MotorController.h"
 #include "../include/EjectionController.h"
-#include "MainController.h"
 #include <sys/ioctl.h>
 #include <fcntl.h>
+#include <syslog.h>
+#include "config.h"
+
+
+pid_t MainController::_task_id = -1;
+pthread_mutex_t MainController::_thrower_mutex = PTHREAD_MUTEX_INITIALIZER;
+MainController* MainController::_object = nullptr;
+bool MainController::_should_exit = false;
 
 
 MainController::~MainController () {
-    _motor_controller->set_enable (false);
-    _ejection_controller->set_rotation_enable (false, false);
-}
-
-MainController::MainController (int argc, char** argv)
-	_pwm_input_motor(_motor_enable_in)
-	_pwm_input_rotation(_rotation_enable_in)
-	_motor_controller (_motor_enable_gpio)
-	_ejection_controller ()
-{
+    pthread_mutex_destroy (&_thrower_mutex);
+    _ejection_controller.set_rotation_enable (false, false);
 
 }
 
-int MainController::main (int argc, char** argv) {
-    if (argc <= 1 || strcmp (argv[1], "-h") == 0 || strcmp (argv[1], "help") == 0 ||
-    strcmp (argv[1], "info") == 0 || strcmp (argv[1], "usage") == 0) {
-        return MainController::print_usage ();
+int MainController::stopCommand () {
+    int ret = 0;
+    lockModule ();
+
+    if (isRunning ()) {
+        MainController* object = _object;
+
+        if (object) {
+            object->requestStop ();
+
+            unsigned int i = 0;
+
+            do {
+                unlockModule ();
+                usleep(10000); // 10 ms
+                lockModule ();
+
+                if (++i > 500 && _task_id != -1) { // wait at most 5 sec
+                    printf ("timeout, forcing stop");
+
+                    task_delete (_task_id);
+
+                    _task_id = -1;
+
+                    delete _object;
+                    _object = nullptr;
+
+                    ret = -1;
+                    break;
+                }
+            } while (_task_id != -1);
+
+        } else {
+            // In the very unlikely event that can only happen on work queues,
+            // if the starting thread does not wait for the work queue to initialize,
+            // and inside the work queue, the allocation of _object fails
+            // and exitAndCleanup() is not called, set the _task_id as invalid.
+            _task_id = -1;
+        }
+    } else {
+        printf ("Already stopped\n");
+    }
+
+    unlockModule ();
+    return ret;
+}
+
+int MainController::startMain (int argc, char** argv) {
+    printf ("startMain\n");
+    if (argc <= 1 || strcmp (argv[1], "-h") == 0 || strcmp (argv[1], "help") == 0
+        || strcmp (argv[1], "info") == 0 || strcmp (argv[1], "usage") == 0) {
+#ifdef SNOW_DEBUG
+        printf("Command: PrintUsage\n");
+#endif
+        return MainController::printUsage ();
     }
 
     if (strcmp (argv[1], "start") == 0) {
-        // Pass the 'start' argument too, because later on px4_getopt() will ignore the first argument.
-        return start_command_base (argc - 1, argv + 1);
+#ifdef SNOW_DEBUG
+        printf("Command: Start\n");
+#endif
+        return startCommand (argc - 1, argv + 1);
+    }
+
+    if (strcmp (argv[1], "stop") == 0) {
+#ifdef SNOW_DEBUG
+        printf("Command: Stop\n");
+#endif
+        return MainController::stopCommand();
+    }
+
+    if (strcmp (argv[1], "status") == 0) {
+#ifdef SNOW_DEBUG
+        printf("Command: Status\n");
+#endif
+        return MainController::statusCommand();
     }
 
     return 1;
 }
 
-bool MainController::init () {
-    _rotation_e_gpio_fd = open (_rotation_enable_gpio, O_RDWR);
-    if (_rotation_e_gpio_fd == 0) {
-        printf("Can't open device %s", _rotation_enable_gpio);
-        clear_and_exit();
-    }
-    _motor_e_fd = open (_motor_enable_gpio, O_RDWR);
-    _direction_fd = open (_direction_gpio, O_RDWR);
-    _angle_pwm_fd = 0;
-}
 
-int MainController::start_command_base (int argc, char* argv[]) {
+int MainController::startCommand (int argc, char* argv[]) {
     int ret = 0;
-    lock_module ();
+    lockModule ();
 
-    if (is_running ()) {
+    if (isRunning ()) {
         ret = -1;
         printf ("Task already running");
 
     } else {
-        ret = MainController::task_spawn (argc, argv);
+#ifdef SNOW_DEBUG
+        printf ("Try to spawn task");
+#endif
+        ret = task_create("Snowblower", SNOW_TASK_PRIORITY, SNOW_TASK_STACK_SIZE, MainController::taskSpawn, argv);
 
         if (ret < 0) {
             printf ("Task start failed (%i)", ret);
+        } else {
+#ifdef SNOW_DEBUG
+            printf ("Task spawned.  (%i)", ret);
+#endif
         }
     }
 
-    unlock_module ();
+    unlockModule ();
     return ret;
 }
 
-int MainController::status_command () {
+int MainController::statusCommand () {
     int ret = -1;
-    lock_module ();
+    lockModule ();
 
-    if (is_running () && _object) {
+    if (isRunning () && _object != nullptr) {
         MainController* object = _object;
-        ret                    = object->print_status ();
+        ret                    = object->printStatus ();
 
     } else {
-        printf ("not running");
+        printf ("not running\n");
     }
 
-    unlock_module ();
+    unlockModule ();
     return ret;
 }
 
-bool MainController::check_State() {
-    float _current_rotation;
-    float _target_rotation;
-    float _current_angle;
-    float _target_angle;
-    bool _enable_rotation;
-    bool _rotation_direction;
-    bool _enable_angle_control;
-}
-
-bool MainController::should_exit () { return _should_exit; }
-
-int MainController::print_status () {
+int MainController::printStatus () {
     printf ("running. PID: %d", _task_id);
     return 0;
 }
 
-int MainController::task_spawn (int argc, char** argv) {
+int MainController::taskSpawn (int argc, char** argv) {
     {
+        //TODO Make constructor
         MainController *instance = new MainController(argc, argv);
 
         if (instance) {
             _object = instance;
             _task_id = getpid();
-
-            if (instance->is_running()) {
-                return true;
-            }
-
+            instance->init();
             instance->run();
-            return true;
 
+            delete instance;
+            _object = nullptr;
+            _task_id = -1;
+            return true;
         } else {
             printf("alloc failed");
         }
@@ -129,22 +179,47 @@ int MainController::task_spawn (int argc, char** argv) {
     }
 }
 
-void MainController::run() {
-    while (!should_exit()) {
-        // loop as the wait may be interrupted by a signal
-        check_state();
-    }
-
-    exit_and_cleanup();
-    return;
+bool MainController::checkState() {
+#ifdef SNOW_DEBUG
+    syslog (LOG_DEBUG, "CheckState()");
+#endif
+    auto motor_value = _input_controller.getMotorValue();
+    auto rotation_value = _input_controller.getRotationValue();
+    auto ejection_value = _input_controller.getEjectionValue();
+    auto is_test_btn_pressed = _input_controller.isTestBtnPressed();
+#ifdef SNOW_DEBUG
+    syslog(LOG_DEBUG, "MainController::checkState: New state: motor_value=[%d], rotation_value=[%d], ejection_value=[%d], is_test_btn_pressed: [%d]\n",
+        motor_value, rotation_value, ejection_value, is_test_btn_pressed    
+    );
+#endif
+    return true;
 }
 
-void MainController::exit_and_clean() {
-    _ejection_controller->stop();
-    _motor_controller->stop();
 
-    if (_rotation_e_gpio_fd) { close (_rotation_e_gpio_fd); }
-    if (_direction_fd) { close (_direction_fd); }
-    if (_motor_e_fd) { close(_motor_e_fd); }
-    if (_)
+void MainController::run() {
+    while (!shouldExit()) {
+        // loop as the wait may be interrupted by a signal
+        checkState();
+        usleep (500);
+    }
+
+    exitAndClean();
+}
+
+MainController::MainController (int argc, char** argv) {
+}
+
+bool MainController::init() {
+    _input_controller.init(_motor_enable_in, _rotation_enable_in, _angle_ejection_in, _test_btn_in);
+    //_ejection_controller.init();
+    return true;
+}
+
+void MainController::exitAndClean() {
+#ifdef SNOW_DEBUG
+    printf("Exit end clean");
+#endif
+    //_ejection_controller->stop();
+
+
 }

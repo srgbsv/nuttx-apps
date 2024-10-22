@@ -1,4 +1,5 @@
 set(STANDALONE_MAKE "$ENV{STANDALONE_MAKE}")
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
 if (STANDALONE_MAKE)
     cmake_minimum_required(VERSION 3.2...3.15)
@@ -13,10 +14,6 @@ if (STANDALONE_MAKE)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
     # set(CMAKE_CXX_EXTENSIONS OFF)
     set(CMAKE_C_STANDARD 99)
-
-    set(SOURCE_FILES ../hellocpp/hellocpp_main.cxx
-            src/PwmOutput.cpp
-    )
 
     set(NUTTX_PATH "${CMAKE_SOURCE_DIR}/nuttx-export-12.6.0-RC0")
 
@@ -80,27 +77,38 @@ if (STANDALONE_MAKE)
     target_link_libraries(${EXE_NAME} --end-group)
 endif()
 
-if(CONFIG_SNOW_APP_HELLOCPP)
-    set(CXXSRCS)
+if(CONFIG_SNOW_APP_SNOWBLOWER)
+    message("SNOWBLOWER PRINT")
 
-    set(
-            CXXSRCS
-            src/HelloWorld.cpp
-            hellocpp_main.cxx
-    )
+    set(CXXSRCS)
+    set(HEADER_FILES)
+
+    include_directories(include)
+    add_subdirectory(include)
+    add_subdirectory(src)
+
+    #target_sources(snowblower PRIVATE ${CSRCS})
+    #target_include_directories(snowblower PRIVATE ${INCDIR})
+
+    message("CXXSRCS:::")
+    message("${CXXSRCS}")
+    message("${HEADER_FILES}")
 
     nuttx_add_application(
             NAME
-            hellocpp
+            snowblower
             STACKSIZE
             ${CONFIG_DEFAULT_TASK_STACKSIZE}
             MODULE
-            ${CONFIG_SNOW_APP_HELLOCPP}
+            ${CONFIG_SNOW_APP_SNOWBLOWER}
             SRCS
-            hellocpp_main.cxx
+            snowblower_main.cpp
+            ${CXXSRCS}
+            INCLUDE_DIRECTORIES
+            /home/sergey/DEV/DEV/DRONES/nuttx-git/apps/snow/snowblower/include
     )
 
     target_sources(apps PRIVATE ${CXXSRCS})
-    #target_include_directories(hellocpp PRIVATE src)
+    target_include_directories(apps PRIVATE /home/sergey/DEV/DEV/DRONES/nuttx-git/apps/snow/snowblower/include)
 endif()
 

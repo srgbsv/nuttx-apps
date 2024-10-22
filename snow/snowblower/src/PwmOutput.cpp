@@ -4,10 +4,29 @@
 
 #include "../include/PwmOutput.h"
 
+#include <sys/types.h>
+#include <sys/ioctl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <syslog.h>
+
 PwmOutput::PwmOutput(const char * devpath)
 {
-    _devpath = devpath;
-    _fd = open(_devpath, O_WRONLY);
+    init (devpath);
+}
+
+bool PwmOutput::init (const char* devpath) {
+    _devpath = std::string(devpath);
+    _fd = open (devpath, O_RDWR);
+    if (_fd < 0) {
+        syslog(LOG_ERR, "open %s failed: %s", devpath, strerror(errno));
+        return false;
+    }
+    _inited = true;
+
+    return true;
 }
 
 PwmOutput::~PwmOutput()
@@ -17,20 +36,21 @@ PwmOutput::~PwmOutput()
     }
 }
 
-PwmOutput::set_duty(float duty)
+int PwmOutput::setDutyCycle (float duty)
 {
-    pwminfo.set_duty(duty);
-    update_pwm_state();
+    _pwminfo.duty = duty;
+    updatePwmState();
 }
 
-PwmOutput::update_pwm_state()
+bool PwmOutput::updatePwmState()
 {
-    ret = ioctl(fd, PWMIOC_SETCHARACTERISTICS,
-              (unsigned long)((uintptr_t)&info));
+    int ret = ioctl(_fd, PWMIOC_SETCHARACTERISTICS,
+              (unsigned long)((uintptr_t)&_pwminfo));
     if (ret < 0)
     {
         printf("pwm_main: ioctl(PWMIOC_SETCHARACTERISTICS) failed: %d\n",
                errno);
     }
+    return true;
 }
 
