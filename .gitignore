@@ -1,4 +1,6 @@
 *.a
+*.dbo
+*.dba
 *.adb
 *.asm
 *.dSYM
@@ -7,6 +9,7 @@
 *.gcda
 *.hobj
 *.i
+*.inf
 *.lib
 *.lst
 *.o
@@ -17,6 +20,7 @@
 *.swp
 *.sym
 *.su
+*.map
 *~
 .built
 .context
@@ -24,6 +28,7 @@
 .kconfig
 *.lock
 /bin
+/bin_debug
 /boot_romfsimg.h
 /external
 /Kconfig
@@ -41,3 +46,4 @@ Make.dep
 build
 .ccls-cache
 compile_commands.json
+.aider*

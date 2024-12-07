@@ -26,7 +26,13 @@ MAINSRC = hello_d_main.d
 
 # hello_d built-in application info
 
-DFLAGS += -oq -betterC
+# no garbage collection
+DFLAGS += -betterC
+# better informations
+DFLAGS += -vtls -verrors=context
+# like #ifdef/#define NuttX_ImportC
+# importC: need $(CC) to compile C file and -P-I to import C includes
+DFLAGS += -P-I$(TOPDIR)/include --d-version=NuttX_ImportC --gcc=$(CC)
 PROGNAME  = $(CONFIG_EXAMPLES_HELLO_D_PROGNAME)
 PRIORITY  = $(CONFIG_EXAMPLES_HELLO_D_PRIORITY)
 STACKSIZE = $(CONFIG_EXAMPLES_HELLO_D_STACKSIZE)

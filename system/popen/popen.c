@@ -25,6 +25,7 @@
 #include <nuttx/config.h>
 
 #include <sys/wait.h>
+#include <sys/ioctl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -34,6 +35,7 @@
 #include <assert.h>
 #include <debug.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #include "nshlib/nshlib.h"
 
@@ -322,7 +324,7 @@ FILE *popen(FAR const char *command, FAR const char *mode)
 
   if (strchr(mode, 'e') == NULL)
     {
-      fcntl(retfd, F_SETFD, 0);
+      ioctl(retfd, FIOCLEX, 0);
     }
 
   /* Finale and return input input/output stream */

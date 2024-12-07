@@ -156,7 +156,7 @@ BLACKWORDS += pthread_key_delete
 BLACKWORDS += pthread_setspecific
 BLACKWORDS += pthread_getspecific
 endif
-ifeq ($(CONFIG_PTHREAD_CLEANUP_STACKSIZE),0)
+ifeq ($(CONFIG_TLS_NCLEANUP),0)
 BLACKWORDS += pthread_cleanup_push
 BLACKWORDS += pthread_cleanup_pop
 endif
@@ -256,6 +256,8 @@ $(LTP_UNPACK): ltp-$(LTPS_VERSION).zip
 	$(Q) patch -d $(LTP_UNPACK) -p1 < 0008-test-ltp-fix-ltp_interfaces_sigaction_23_10-deadloop.patch
 	$(Q) patch -d $(LTP_UNPACK) -p1 < 0009-ltp-modify-user-code-for-fdcheck-compatibility.patch
 	$(Q) patch -d $(LTP_UNPACK) -p1 < 0010-ltp-fix-build-warning.patch
+	$(Q) patch -d $(LTP_UNPACK) -p1 < 0011-ltp-fix-the-proc.h-header-file-duplicate-inclusion.patch
+	$(Q) patch -d $(LTP_UNPACK) -p1 < 0012-ltp-fix-build-error.patch
 
 # Download and unpack tarball if no git repo found
 ifeq ($(wildcard $(LTP_UNPACK)/.git),)

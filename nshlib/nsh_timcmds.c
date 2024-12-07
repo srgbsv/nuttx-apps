@@ -25,6 +25,7 @@
 #include <nuttx/config.h>
 
 #include <stdlib.h>
+#include <string.h>
 #include <strings.h>
 #include <unistd.h>
 #include <time.h>
@@ -298,7 +299,8 @@ int cmd_time(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv)
 #ifndef CONFIG_NSH_DISABLEBG
   bool bgsave;
 #endif
-  bool redirsave;
+  bool redirsave_out;
+  bool redirsave_in;
   int ret;
 
   /* Get the current time */
@@ -315,7 +317,8 @@ int cmd_time(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv)
 #ifndef CONFIG_NSH_DISABLEBG
   bgsave    = vtbl->np.np_bg;
 #endif
-  redirsave = vtbl->np.np_redirect;
+  redirsave_out = vtbl->np.np_redir_out;
+  redirsave_in = vtbl->np.np_redir_in;
 
   /* Execute the command */
 
@@ -354,7 +357,8 @@ int cmd_time(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv)
 #ifndef CONFIG_NSH_DISABLEBG
   vtbl->np.np_bg       = bgsave;
 #endif
-  vtbl->np.np_redirect = redirsave;
+  vtbl->np.np_redir_out = redirsave_out;
+  vtbl->np.np_redir_out = redirsave_in;
 
   return ret;
 }
@@ -431,6 +435,7 @@ int cmd_date(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv)
   return ret;
 
 errout:
+  optind = 0;
   nsh_error(vtbl, errfmt, argv[0]);
   return ERROR;
 }
@@ -539,5 +544,66 @@ int cmd_timedatectl(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv)
     }
 
   return ret;
+}
+#endif
+
+#ifndef CONFIG_NSH_DISABLE_WATCH
+int cmd_watch(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv)
+{
+  char buffer[CONFIG_NSH_LINELEN];
+  int interval = 2;
+  int count = -1;
+  FAR char *cmd;
+  int option;
+  int ret;
+  int i;
+
+  while ((option = getopt(argc, argv, "n:c:")) != ERROR)
+    {
+      switch (option)
+        {
+          case 'n':
+            interval = atoi(optarg);
+            break;
+
+          case 'c':
+            count = atoi(optarg);
+            break;
+
+          default:
+            nsh_error(vtbl, g_fmtarginvalid, argv[0]);
+            return ERROR;
+        }
+    }
+
+  if (optind < argc)
+    {
+      cmd = argv[optind];
+    }
+  else
+    {
+      nsh_error(vtbl, g_fmtarginvalid, argv[0]);
+      return ERROR;
+    }
+
+  if (count < 0)
+    {
+      count = INT_MAX;
+    }
+
+  for (i = 0; i < count; i++)
+    {
+      strlcpy(buffer, cmd, CONFIG_NSH_LINELEN);
+      ret = nsh_parse(vtbl, buffer);
+      if (ret < 0)
+        {
+          nsh_error(vtbl, g_fmtcmdfailed, argv[0], cmd, NSH_ERRNO);
+          return ERROR;
+        }
+
+      sleep(interval);
+    }
+
+  return OK;
 }
 #endif
