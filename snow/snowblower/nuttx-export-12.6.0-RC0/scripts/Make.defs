@@ -1,0 +1,45 @@
+ARCHCFLAGS       = -Wstrict-prototypes -Wno-attributes -Wno-unknown-pragmas -Wno-psabi
+ARCHCPUFLAGS     = -mlittle-endian -march=armv7e-m -mtune=cortex-m4 -mfloat-abi=soft -mthumb -Wa,-mthumb -Wa,-mimplicit-it=always
+ARCHCXXFLAGS     = -Wno-attributes -Wno-unknown-pragmas -nostdinc++ -Wno-psabi -std=gnu++17 -fno-exceptions -fcheck-new -fno-rtti
+ARCHPICFLAGS     = -fpic -msingle-pic-base -mpic-register=r10
+ARCHWARNINGS     = 
+ARCHWARNINGSXX   = 
+ARCHOPTIMIZATION = -Os -fno-strict-aliasing -fomit-frame-pointer -fno-common -Wall -Wshadow -Wundef -ffunction-sections -fdata-sections
+CROSSDEV         = arm-none-eabi-
+CC               = arm-none-eabi-gcc
+CXX              = arm-none-eabi-g++
+CPP              = arm-none-eabi-gcc -E -P -x c
+LD               = arm-none-eabi-ld
+AR               = arm-none-eabi-ar rcs
+NM               = arm-none-eabi-nm
+STRIP            = arm-none-eabi-strip --strip-unneeded
+OBJCOPY          = arm-none-eabi-objcopy
+OBJDUMP          = arm-none-eabi-objdump
+ZIG              = zig
+ZIGFLAGS         = -target thumb-freestanding-eabi -mcpu cortex_m4
+DC               = 
+DFLAGS           = 
+NXFLATLDFLAGS1   = -r -d -warn-common
+NXFLATLDFLAGS2   = -r -d -warn-common -T/home/sergey/DEV/DEV/DRONES/nuttx-git/nuttx/binfmt/libnxflat/gnu-nxflat-pcrel.ld -no-check-sections
+OBJEXT           = .o
+LIBEXT           = .a
+EXEEXT           = 
+HOSTCC           = cc
+HOSTINCLUDES     = 
+HOSTCFLAGS       = -O2 -Wall -Wstrict-prototypes -Wshadow -DHAVE_STRTOK_C=1
+HOSTLDFLAGS      = 
+HOSTEXEEXT       = 
+LDNAME           = f411re.ld
+LDELFFLAGS       = 
+NUTTX_ARCH       = arm
+NUTTX_ARCH_CHIP  = stm32
+NUTTX_BOARD      = nucleo-f4x1re
+NUTTX_BUILD      = flat
+NUTTX_CXX        = cxx
+EXTRA_LIBS       = /opt/gcc/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7e-m/nofp/libgcc.a /opt/gcc/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libm.a /opt/gcc/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/nofp/libsupc++.a
+EXTRA_OBJS       = 
+HEAD_OBJ         = 
+LDENDGROUP       = 
+LDFLAGS          = -nostdlib --gc-sections --cref -Map=/home/sergey/DEV/DEV/DRONES/nuttx-git/nuttx/nuttx.map
+LDSTARTGROUP     = 
+LDLIBS           = -lsched -ldrivers -lboards -lc -lmm -larch -lxx -lapps -lfs -lbinfmt -lboard 

@@ -20,18 +20,20 @@ class MainController {
     };
 
     //Input signals
-    const char* _motor_enable_in      = "/dev/pwmin1"; // Ejection motor pwm signal. PE9
+    // USART B6 B7
+    const char* _motor_enable_in      = "/dev/pwmin1"; // Ejection motor pwm signal. PA8
     const char* _rotation_enable_in   = "/dev/pwmin2"; // Ejection rotation pwm signal PA0
     const char* _angle_ejection_in    = "/dev/pwmin3"; // Ejection angle pwm signal PA6
-    const char* _test_btn_in          = "/dev/gpio0";  // Button for testing all systems PE2
+    const char* _test_btn_in          = "/dev/gpio0";  // Button for testing all systems PA3
 
     //Output signals
-    const char* _rotation_enable_gpio = "/dev/gpio1";
-    const char* _motor_enable_gpio    = "/dev/pwmout1";
-    const char* _direction_gpio       = "/dev/gpio2";
-    const char* _angle_pwm_gpio       = "/dev/pwmout2";
+    const char* _rotation_enable_gpio = "/dev/gpio2";   // Rotation enable gpio. PA4
+    const char* _motor_enable_gpio    = "/dev/pwmout10"; // Motor PWM. PB8
+    const char* _direction_gpio       = "/dev/gpio3";   // Rotation enable gpio. PA5
+    const char* _angle_pwm_gpio       = "/dev/pwmout11"; // Angle servo. PB9
 
     static bool _should_exit;
+    bool _is_test_going = false;
     static pid_t _task_id;
     static pthread_mutex_t _thrower_mutex;
 
@@ -67,6 +69,10 @@ class MainController {
     void run ();
 
     bool checkState();
+
+    bool updateState();
+
+    bool testScenario();
 
     /**
 	 * @brief lock_module Mutex to lock the module thread.

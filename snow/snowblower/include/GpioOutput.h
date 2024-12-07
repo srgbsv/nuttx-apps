@@ -2,26 +2,26 @@
 // Created by sergey on 10.10.24.
 //
 
-#ifndef SNOWBLOWER_GPIOINPUT_H
-#define SNOWBLOWER_GPIOINPUT_H
+#ifndef SNOWBLOWER_GPIOOUTPUT_H
+#define SNOWBLOWER_GPIOOUTPUT_H
 
 
 #include "string"
-class GpioInput {
+class GpioOutput {
+    private:
     int             _fd;
     bool            _inited = false;
-    std::string          _devpath;
+    std::string     _devpath;
+    bool            _default = false;
 
     public:
-    GpioInput(const char * devpath);
-    GpioInput() {};
+    GpioOutput() {};
     bool init(const char * devpath);
-    ~GpioInput();
+    ~GpioOutput();
     [[nodiscard]] bool isInit() const { return _inited; }
 
-    int getState();
-    private:
+    bool setValue(bool value);
 };
 
 
-#endif // SNOWBLOWER_GPIOINPUT_H
+#endif // SNOWBLOWER_GPIOOUTPUT_H

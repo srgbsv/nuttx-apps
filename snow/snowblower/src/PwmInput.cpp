@@ -36,6 +36,12 @@ bool PwmInput::init(const char * devpath) {
     return true;
 }
 
+bool PwmInput::init (const char* devpath, int min, int max) {
+    _min = min;
+    _max = max;
+    return init (devpath);
+}
+
 int PwmInput::getDutyCycle () {
     if (!_inited) {
         syslog(LOG_ERR, "PwmInput: device %s is not inited", _devpath.c_str());
@@ -59,4 +65,8 @@ int PwmInput::getDutyCycle () {
     }
 
 	return dutycycle;
+}
+int PwmInput::getDutyCycleNormalized () {
+    auto duty = getDutyCycle();
+    return float (duty - _min) / (_max - _min) * 100;
 }

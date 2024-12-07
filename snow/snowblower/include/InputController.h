@@ -23,8 +23,11 @@ class InputController {
     );
 
     int getMotorValue();
+    int getMotorValueRaw();
     int getRotationValue();
+    int getRotationValueRaw();
     int getEjectionValue();
+    int getEjectionValueRaw();
     bool isTestBtnPressed();
     bool init (const char* _motor_enable_dev,
     const char* _rotation_dev,

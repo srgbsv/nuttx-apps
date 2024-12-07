@@ -20,7 +20,7 @@ bool InputController::init(
     const char* _ejection_dev,
     const char* _test_btn_dev
 ) {
-    _pwm_input_motor.init(_motor_enable_dev);
+    _pwm_input_motor.init(_motor_enable_dev, 4, 9);
     if (!_pwm_input_motor.isInit ()) {
         syslog(LOG_ERR, "Can't input pwm device %s", _motor_enable_dev);
     } else {
@@ -28,7 +28,7 @@ bool InputController::init(
         syslog(LOG_DEBUG, "InputController: device %s PWM inited", _motor_enable_dev);
 #endif
     }
-    _pwm_input_rotation.init(_rotation_dev);
+    _pwm_input_rotation.init(_rotation_dev, 4, 9);
     if (!_pwm_input_rotation.isInit ()) {
         syslog(LOG_ERR, "Can't input pwm device %s", _rotation_dev);
     } else {
@@ -36,7 +36,7 @@ bool InputController::init(
         syslog(LOG_DEBUG, "InputController: device %s PWM inited", _rotation_dev);
 #endif
     }
-    _pwm_input_ejection.init(_ejection_dev);
+    _pwm_input_ejection.init(_ejection_dev, 4, 9);
     if (!_pwm_input_ejection.isInit()) {
         syslog(LOG_ERR, "Can't input pwm device %s", _ejection_dev);
     } else {
@@ -57,14 +57,39 @@ bool InputController::init(
 }
 
 int InputController::getMotorValue() {
-    return _pwm_input_motor.getDutyCycle();
+    auto motor_pwm = _pwm_input_motor.getDutyCycleNormalized();
+    if (motor_pwm > 50 && motor_pwm < 65) {
+        return 50;
+    }
+    if (motor_pwm >= 65) {
+        return 99;
+    }
+    return 0;
 }
+
+int InputController::getMotorValueRaw () {
+    return _pwm_input_motor.getDutyCycleNormalized();
+}
+
 int InputController::getRotationValue() {
+    auto rotation_pwm = _pwm_input_rotation.getDutyCycleNormalized();
+    if (rotation_pwm > 65) return 1;
+    if (rotation_pwm < 45) return -1;
+    return 0;
+}
+
+int InputController::getRotationValueRaw () {
     return _pwm_input_rotation.getDutyCycle();
 }
+
 int InputController::getEjectionValue() {
+    return _pwm_input_ejection.getDutyCycleNormalized() / 11 + 3;
+}
+
+int InputController::getEjectionValueRaw () {
     return _pwm_input_ejection.getDutyCycle();
 }
+
 bool InputController::isTestBtnPressed() {
     return _gpio_in_test_btn.getState();
 }

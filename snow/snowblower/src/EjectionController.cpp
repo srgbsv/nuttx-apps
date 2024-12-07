@@ -6,24 +6,12 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <signal.h>
+#include <syslog.h>
 
 #include <nuttx/ioexpander/gpio.h>
 #include <nuttx/config.h>
 
 #define GPIOC_WRITE 1
-
-EjectionController::EjectionController (
-    const char * direction_gpio_dev,
-    const char * rotation_gpio_dev,
-    const char * motor_pwm_dev,
-    const char * angle_gpio_dev
-    )
-    : _direction_gpio_path (direction_gpio_dev),
-    _rotation_gpio_path (rotation_gpio_dev),
-    _motor_pwm_path (motor_pwm_dev),
-     _angle_gpio_path (angle_gpio_dev) {
-
-}
 
 /*bool EjectionController::init (const char* direction_gpio_dev, const char* rotation_gpio_dev, const char* motor_enable_gpio_dev, const char* angle_gpio_dev) {
 
@@ -32,30 +20,25 @@ EjectionController::EjectionController (
 EjectionController::EjectionController () {
 }
 
-void EjectionController::set_angle (float angle) {
+void EjectionController::setAngle (float angle) {
     _target_angle = angle;
 }
 
-void EjectionController::set_rotation (float rotation) {
+void EjectionController::setRotation (float rotation) {
     _target_rotation = rotation;
 }
 
-void EjectionController::set_rotation_enable (bool run, bool clockwise){
+void EjectionController::setRotationEnable (bool run, bool clockwise){
     _rotation_enable = run;
     _rotation_direction = clockwise;
 }
 
-void EjectionController::set_motor_enable (bool enable) {
+void EjectionController::setMotorEnable (bool enable) {
     _motor_enable = enable;
 }
 
 EjectionController::~EjectionController () {
-    if (_rotation_gpio_fd) {
-        close(_rotation_gpio_fd);
-    }
-    if (_direction_gpio_fd) {
-        close(_direction_gpio_fd);
-    }
+
 }
 void EjectionController::loop () {
     int ret = 0;
@@ -106,4 +89,66 @@ void EjectionController::loop () {
             (unsigned int)outvalue, _rotation_gpio_path.c_str(), errcode);
         }
     } */
+}
+bool EjectionController::init (const char* direction_gpio_dev,
+    const char* rotation_gpio_dev,
+    const char* motor_enable_gpio_dev,
+    const char* angle_gpio_dev
+) {
+    _direction_gpio.init (direction_gpio_dev);
+    if (!_direction_gpio.isInit()) {
+        syslog(LOG_ERR, "Unable to init output GPIO device %s", direction_gpio_dev);
+    } else {
+#ifdef SNOW_DEBUG
+        syslog(LOG_DEBUG, "EjectionController: device %s GPIO inited", direction_gpio_dev);
+#endif
+    }
+    _rotation_gpio.init (rotation_gpio_dev);
+    if (!_rotation_gpio.isInit()) {
+        syslog(LOG_ERR, "Unable to init output GPIO device %s", rotation_gpio_dev);
+    } else {
+#ifdef SNOW_DEBUG
+        syslog(LOG_DEBUG, "EjectionController: device %s GPIO inited", rotation_gpio_dev);
+#endif
+    }
+    _motor_pwm.init (motor_enable_gpio_dev);
+    if (!_motor_pwm.isInit()) {
+        syslog(LOG_ERR, "Unable to init output PWM device %s", motor_enable_gpio_dev);
+    } else {
+#ifdef SNOW_DEBUG
+        syslog(LOG_DEBUG, "EjectionController: device %s PWM inited", motor_enable_gpio_dev);
+#endif
+    }
+    _angle_pwm.init (angle_gpio_dev);
+    if (!_angle_pwm.isInit()) {
+        syslog(LOG_ERR, "Unable to init output PWM device %s", angle_gpio_dev);
+    } else {
+#ifdef SNOW_DEBUG
+        syslog(LOG_DEBUG, "EjectionController: device %s PWM inited", angle_gpio_dev);
+#endif
+    }
+    return true;
+}
+
+void EjectionController::stop () {
+    _direction_gpio.setValue (false);
+    _rotation_gpio.setValue (false);
+    _angle_pwm.setDutyCycle (0);
+    _motor_pwm.setDutyCycle (0);
+}
+
+bool EjectionController::forceMotorSet (float value) {
+    return _motor_pwm.setDutyCycle (value);
+}
+
+bool EjectionController::forceRotationSet (bool run, bool clockwise) {
+    if (_direction_gpio.setValue (clockwise) && _rotation_gpio.setValue (run)) {
+        return true;
+    }
+
+    return false;
+}
+
+bool EjectionController::forceAngleSet (float value) {
+    return _angle_pwm.setDutyCycle (value);
 }

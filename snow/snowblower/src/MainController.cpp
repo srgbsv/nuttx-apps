@@ -7,7 +7,7 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <syslog.h>
-#include "config.h"
+#include "../include/config.h"
 
 
 pid_t MainController::_task_id = -1;
@@ -18,8 +18,7 @@ bool MainController::_should_exit = false;
 
 MainController::~MainController () {
     pthread_mutex_destroy (&_thrower_mutex);
-    _ejection_controller.set_rotation_enable (false, false);
-
+    _ejection_controller.stop();
 }
 
 int MainController::stopCommand () {
@@ -114,7 +113,7 @@ int MainController::startCommand (int argc, char* argv[]) {
 
     } else {
 #ifdef SNOW_DEBUG
-        printf ("Try to spawn task");
+        printf ("Try to spawn task. Priority: %d", SNOW_TASK_PRIORITY);
 #endif
         ret = task_create("Snowblower", SNOW_TASK_PRIORITY, SNOW_TASK_STACK_SIZE, MainController::taskSpawn, argv);
 
@@ -183,9 +182,9 @@ bool MainController::checkState() {
 #ifdef SNOW_DEBUG
     syslog (LOG_DEBUG, "CheckState()");
 #endif
-    auto motor_value = _input_controller.getMotorValue();
-    auto rotation_value = _input_controller.getRotationValue();
-    auto ejection_value = _input_controller.getEjectionValue();
+    auto motor_value = _input_controller.getMotorValueRaw();
+    auto rotation_value = _input_controller.getRotationValueRaw();
+    auto ejection_value = _input_controller.getEjectionValueRaw();
     auto is_test_btn_pressed = _input_controller.isTestBtnPressed();
 #ifdef SNOW_DEBUG
     syslog(LOG_DEBUG, "MainController::checkState: New state: motor_value=[%d], rotation_value=[%d], ejection_value=[%d], is_test_btn_pressed: [%d]\n",
@@ -195,11 +194,40 @@ bool MainController::checkState() {
     return true;
 }
 
+bool MainController::updateState() {
+#ifdef SNOW_DEBUG
+    syslog (LOG_DEBUG, "updateState()");
+#endif    int getEjectionValue();
+
+    auto motor_value = _input_controller.getMotorValue();
+    auto rotation_value = _input_controller.getRotationValue();
+    auto ejection_value = _input_controller.getEjectionValue();
+    auto is_test_btn_pressed = _input_controller.isTestBtnPressed();
+#ifdef SNOW_DEBUG
+    syslog(LOG_DEBUG, "MainController::updateState: New state: motor_value=[%d], rotation_value=[%d], ejection_value=[%d], is_test_btn_pressed: [%d]\n",
+    motor_value, rotation_value, ejection_value, is_test_btn_pressed
+    );
+#endif
+    if (is_test_btn_pressed && !_is_test_going) {
+        MainController::lockModule();
+        _is_test_going = true;
+        testScenario();
+        _is_test_going = false;
+        MainController::unlockModule();
+        usleep (1000);
+        return true;
+    }
+    _ejection_controller.forceMotorSet (motor_value);
+    _ejection_controller.forceRotationSet (rotation_value == 1? 0: 1, rotation_value == -1 ? 0: 1);
+    _ejection_controller.forceAngleSet (ejection_value);
+    return true;
+}
 
 void MainController::run() {
     while (!shouldExit()) {
         // loop as the wait may be interrupted by a signal
-        checkState();
+        updateState();
+        //checkState();
         usleep (500);
     }
 
@@ -208,10 +236,25 @@ void MainController::run() {
 
 MainController::MainController (int argc, char** argv) {
 }
+bool MainController::testScenario () {
+    syslog (LOG_INFO, "Run test scenario");
+    /*_ejection_controller.forceRotationSet (1, 1);
+    usleep (5000000);
+    _ejection_controller.forceRotationSet (1, 0);
+    usleep (10000000);
+    _ejection_controller.forceRotationSet (1, 1);
+    usleep (5000000);*/
+    _ejection_controller.forceMotorSet (20);
+    _ejection_controller.forceAngleSet (50);
+    usleep (20000000);
+    _ejection_controller.stop();
+    syslog (LOG_INFO, "Test scenario complete");
+    return true;
+}
 
 bool MainController::init() {
     _input_controller.init(_motor_enable_in, _rotation_enable_in, _angle_ejection_in, _test_btn_in);
-    //_ejection_controller.init();
+    _ejection_controller.init(_direction_gpio, _rotation_enable_gpio, _motor_enable_gpio, _angle_pwm_gpio);
     return true;
 }
 
@@ -219,7 +262,5 @@ void MainController::exitAndClean() {
 #ifdef SNOW_DEBUG
     printf("Exit end clean");
 #endif
-    //_ejection_controller->stop();
-
-
+    _ejection_controller.stop();
 }
