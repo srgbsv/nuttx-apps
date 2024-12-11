@@ -2,7 +2,8 @@
 // Created by sergey on 20.07.24.
 //
 
-#include "../include/BodyController.h"
+#include "BodyController.h"
+#include "config.h"
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <signal.h>
@@ -10,7 +11,6 @@
 
 #include <nuttx/ioexpander/gpio.h>
 #include <nuttx/config.h>
-#include "BodyController.h"
 
 #define GPIOC_WRITE 1
 
@@ -33,7 +33,7 @@ bool BodyController::init (
         syslog(LOG_DEBUG, "BodyController: device %s GPIO inited", lift_up_gpio_dev);
 #endif
     }
-    _lift_down_gpio.init (lift_up_gpio_dev);
+    _lift_down_gpio.init (lift_down_gpio_dev);
     if (!_lift_down_gpio.isInit()) {
         syslog(LOG_ERR, "Unable to init output GPIO device %s", lift_down_gpio_dev);
     } else {
@@ -50,10 +50,13 @@ void BodyController::stop () {
 }
 
 bool BodyController::forceLiftSet (int lift) {
+
     if (_lift_up_gpio.isInit() && _lift_down_gpio.isInit()) {
-        _lift_up_gpio.setValue(lift > 0 ? 1 : 0);
-        _lift_down_gpio.setValue(lift < 0 ? 1 : 0);
+        _lift_up_gpio.setValue(lift > 0 ? false : true);
+        _lift_down_gpio.setValue(lift < 0 ? false : true);
+        return true;
     }
+    return false;
 }
 
 BodyController::~BodyController() {

@@ -2,13 +2,11 @@
 // Created by sergey on 20.07.24.
 //
 
-#ifndef APPS_EJECTION_CONTROLLER_H
-#define APPS_EJECTION_CONTROLLER_H
+#ifndef APPS_BODY_CONTROLLER_H
+#define APPS_BODY_CONTROLLER_H
 
 #include "GpioOutput.h"
-#include "PwmOutput.h"
 #include "config.h"
-#include <cstdio>
 
 class BodyController {
     private:
@@ -32,4 +30,4 @@ class BodyController {
     BodyController ();
 };
 
-#endif // APPS_EJECTION_CONTROLLER_H
+#endif // APPS_BODY_CONTROLLER_H

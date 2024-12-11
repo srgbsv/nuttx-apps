@@ -30,6 +30,7 @@ bool GpioOutput::setValue(bool value) {
     int ret = ioctl(_fd, GPIOC_WRITE, (unsigned long)value);
     if (ret < 0)
     {
+        syslog(LOG_ERR, "ERROR!!!!");
         int errcode = errno;
         fprintf(stderr,
         "ERROR: Failed to write value %u from %s: %d\n",

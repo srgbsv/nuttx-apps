@@ -2,11 +2,11 @@
 // Created by sergey on 21.07.24.
 //
 
-#include "../include/MainController.h"
+#include "MainController.h"
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <syslog.h>
-#include "../include/config.h"
+#include "config.h"
 
 
 pid_t MainController::_task_id = -1;
@@ -191,7 +191,7 @@ bool MainController::checkState() {
 bool MainController::updateState() {
 #ifdef HOLDER_DEBUG
     syslog (LOG_DEBUG, "updateState()");
-#endif    int getEjectionValue();
+#endif
 
     auto lift_value = _input_controller.getLiftValue();
 #ifdef HOLDER_DEBUG

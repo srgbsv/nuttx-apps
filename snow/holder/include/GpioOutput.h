@@ -5,14 +5,14 @@
 #ifndef HOLDER_GPIOOUTPUT_H
 #define HOLDER_GPIOOUTPUT_H
 
-
 #include "string"
+
 class GpioOutput {
     private:
     int             _fd;
     bool            _inited = false;
     std::string     _devpath;
-    bool            _default = false;
+    bool            _default = true;
 
     public:
     GpioOutput() {};

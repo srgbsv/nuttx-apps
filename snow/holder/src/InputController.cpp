@@ -26,8 +26,8 @@ int InputController::getLiftValue() {
 #ifdef HOLDER_DEBUG
     syslog(LOG_DEBUG, "New duty cycle: %d", lift_pwm);
 #endif    
-    if (lift_pwm > 65) return 1;
-    if (lift_pwm < 45) return -1;
+    if (lift_pwm > 85) return 1;
+    if (lift_pwm < 15) return -1;
     return 0;
 }
 
