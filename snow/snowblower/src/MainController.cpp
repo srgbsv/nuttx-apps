@@ -2,8 +2,8 @@
 // Created by sergey on 21.07.24.
 //
 
-#include "../include/MainController.h"
-#include "../include/EjectionController.h"
+#include "MainController.h"
+#include "EjectionController.h"
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <syslog.h>
@@ -70,13 +70,13 @@ int MainController::stopCommand () {
 
 int MainController::startMain (int argc, char** argv) {
     printf ("startMain\n");
-    if (argc <= 1 || strcmp (argv[1], "-h") == 0 || strcmp (argv[1], "help") == 0
+    /*if (argc <= 1 || strcmp (argv[1], "-h") == 0 || strcmp (argv[1], "help") == 0
         || strcmp (argv[1], "info") == 0 || strcmp (argv[1], "usage") == 0) {
 #ifdef SNOW_DEBUG
         printf("Command: PrintUsage\n");
 #endif
         return MainController::printUsage ();
-    }
+    }*/
 
     if (strcmp (argv[1], "start") == 0) {
 #ifdef SNOW_DEBUG
@@ -99,7 +99,7 @@ int MainController::startMain (int argc, char** argv) {
         return MainController::statusCommand();
     }
 
-    return 1;
+    return MainController::startCommand(argc -1, argv + 1);
 }
 
 
@@ -185,10 +185,10 @@ bool MainController::checkState() {
     auto motor_value = _input_controller.getMotorValueRaw();
     auto rotation_value = _input_controller.getRotationValueRaw();
     auto ejection_value = _input_controller.getEjectionValueRaw();
-    auto is_test_btn_pressed = _input_controller.isTestBtnPressed();
+    auto is_enabled =     _input_controller.getSwitchValue();
 #ifdef SNOW_DEBUG
-    syslog(LOG_DEBUG, "MainController::checkState: New state: motor_value=[%d], rotation_value=[%d], ejection_value=[%d], is_test_btn_pressed: [%d]\n",
-        motor_value, rotation_value, ejection_value, is_test_btn_pressed    
+    syslog(LOG_DEBUG, "MainController::checkState: New state: motor_value=[%d], rotation_value=[%d], ejection_value=[%d], is_enabled: [%d]\n",
+        motor_value, rotation_value, ejection_value, 0    
     );
 #endif
     return true;
@@ -197,29 +197,26 @@ bool MainController::checkState() {
 bool MainController::updateState() {
 #ifdef SNOW_DEBUG
     syslog (LOG_DEBUG, "updateState()");
-#endif    int getEjectionValue();
-
+#endif 
     auto motor_value = _input_controller.getMotorValue();
     auto rotation_value = _input_controller.getRotationValue();
     auto ejection_value = _input_controller.getEjectionValue();
-    auto is_test_btn_pressed = _input_controller.isTestBtnPressed();
+    auto is_enabled = _input_controller.getSwitchValue();
 #ifdef SNOW_DEBUG
-    syslog(LOG_DEBUG, "MainController::updateState: New state: motor_value=[%d], rotation_value=[%d], ejection_value=[%d], is_test_btn_pressed: [%d]\n",
-    motor_value, rotation_value, ejection_value, is_test_btn_pressed
+    syslog(LOG_DEBUG, "MainController::updateState: New state: motor_value=[%d], rotation_value=[%d], ejection_value=[%d], is_enabled: [%d]\n",
+    motor_value, rotation_value, ejection_value, is_enabled
     );
 #endif
-    if (is_test_btn_pressed && !_is_test_going) {
-        MainController::lockModule();
-        _is_test_going = true;
-        testScenario();
-        _is_test_going = false;
-        MainController::unlockModule();
-        usleep (1000);
-        return true;
+    if (motor_value != -1) {
+        _ejection_controller.setMotor (motor_value);
     }
-    _ejection_controller.forceMotorSet (motor_value);
-    _ejection_controller.forceRotationSet (rotation_value == 1? 0: 1, rotation_value == -1 ? 0: 1);
-    _ejection_controller.forceAngleSet (ejection_value);
+    _ejection_controller.setRotationEnable (rotation_value == 1? 0: 1, rotation_value == -1 ? 0: 1);
+    if (ejection_value != -1) {
+        _ejection_controller.setAngle (ejection_value);
+    }
+    if (is_enabled != -1) {
+        _ejection_controller.setEnable (is_enabled);
+    }
     return true;
 }
 
@@ -228,7 +225,7 @@ void MainController::run() {
         // loop as the wait may be interrupted by a signal
         updateState();
         //checkState();
-        usleep (500);
+        usleep (200);
     }
 
     exitAndClean();
@@ -236,25 +233,10 @@ void MainController::run() {
 
 MainController::MainController (int argc, char** argv) {
 }
-bool MainController::testScenario () {
-    syslog (LOG_INFO, "Run test scenario");
-    /*_ejection_controller.forceRotationSet (1, 1);
-    usleep (5000000);
-    _ejection_controller.forceRotationSet (1, 0);
-    usleep (10000000);
-    _ejection_controller.forceRotationSet (1, 1);
-    usleep (5000000);*/
-    _ejection_controller.forceMotorSet (20);
-    _ejection_controller.forceAngleSet (50);
-    usleep (20000000);
-    _ejection_controller.stop();
-    syslog (LOG_INFO, "Test scenario complete");
-    return true;
-}
 
 bool MainController::init() {
-    _input_controller.init(_motor_enable_in, _rotation_enable_in, _angle_ejection_in, _test_btn_in);
-    _ejection_controller.init(_direction_gpio, _rotation_enable_gpio, _motor_enable_gpio, _angle_pwm_gpio);
+    _input_controller.init(_motor_enable_in, _rotation_enable_in, _angle_ejection_in, _general_switch_in);
+    _ejection_controller.init(_direction_gpio, _rotation_enable_gpio, _motor_enable_gpio, _angle_pwm_gpio, _general_switch_gpio);
     return true;
 }
 

@@ -2,14 +2,14 @@
 // Created by sergey on 11.10.24.
 //
 
-#include "../include/InputController.h"
+#include "InputController.h"
 #include "syslog.h"
-#include "../include/config.h"
+#include "config.h"
 
 bool InputController::init(
     const char* lift_enable_dev
 ) {
-    _pwm_input_lift.init(lift_enable_dev, 4, 9);
+    _pwm_input_lift.init(lift_enable_dev, 30, 100);
     if (!_pwm_input_lift.isInit ()) {
         syslog(LOG_ERR, "Can't input pwm device %s", lift_enable_dev);
     } else {

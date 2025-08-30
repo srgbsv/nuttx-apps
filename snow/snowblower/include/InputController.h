@@ -12,14 +12,14 @@ class InputController {
     PwmInput    _pwm_input_motor;
     PwmInput    _pwm_input_rotation;
     PwmInput    _pwm_input_ejection;
-    GpioInput   _gpio_in_test_btn;
+    PwmInput    _pwm_input_switch;
 
     public:
     InputController(
         const char * _motor_enable_dev,
         const char * _rotation_dev,
         const char * _ejection_dev,
-        const char * _test_btn_dev
+        const char * _general_switch_dev
     );
 
     int getMotorValue();
@@ -28,11 +28,11 @@ class InputController {
     int getRotationValueRaw();
     int getEjectionValue();
     int getEjectionValueRaw();
-    bool isTestBtnPressed();
+    int getSwitchValue();
     bool init (const char* _motor_enable_dev,
     const char* _rotation_dev,
     const char* _ejection_dev,
-    const char* _test_btn_dev);
+    const char* _general_switch_dev);
     InputController() {}
 };
 

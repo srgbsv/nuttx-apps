@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include <syslog.h>
 #include <nuttx/timers/capture.h>
+#include "config.h"
 
 PwmInput::PwmInput (const char * devpath) {
     init (devpath);
@@ -63,6 +64,9 @@ int PwmInput::getDutyCycle () {
 
         return 0;
     }
+#ifdef SNOW_VERBOSE
+    syslog(LOG_DEBUG, "RAW_PWMIN %s: %d", _devpath.c_str(), dutycycle);
+#endif
 
 	return dutycycle;
 }

@@ -21,79 +21,68 @@ EjectionController::EjectionController () {
 }
 
 void EjectionController::setAngle (float angle) {
-    _target_angle = angle;
-}
-
-void EjectionController::setRotation (float rotation) {
-    _target_rotation = rotation;
+    if (_current_angle != angle) {
+        _current_angle = angle;
+        _angle_current_cnt = 0;
+        syslog(LOG_DEBUG, "EjectionController: changing angle value: %.2f -> %.2f", _current_angle, angle);
+    } else {
+        _angle_current_cnt++;
+        if (_angle_current_cnt > _event_count_thd) { 
+            forceAngleSet(_current_angle);
+        }
+    }
 }
 
 void EjectionController::setRotationEnable (bool run, bool clockwise){
-    _rotation_enable = run;
-    _rotation_direction = clockwise;
+    if (run != _rotation_enable || _rotation_direction != clockwise) {
+        _rotation_enable = run;
+        _rotation_direction = clockwise;
+        _rotation_event_cnt = 0;
+        syslog(LOG_DEBUG, "EjectionController: changing rotation value: %d %d -> %d %d ", 
+            _rotation_enable, _rotation_direction, run, clockwise);
+    } else {
+        _rotation_event_cnt++;
+        if (_rotation_event_cnt > _event_count_thd) {
+            forceRotationSet(_rotation_enable, _rotation_direction);
+        }
+    }
 }
 
-void EjectionController::setMotorEnable (bool enable) {
-    _motor_enable = enable;
+void EjectionController::setMotor (float motor_value) {
+    if (_current_motor_value != motor_value) {
+        _current_motor_value = motor_value;
+        _motor_value_cnt = 0;
+        syslog(LOG_DEBUG, "EjectionController: changing motor value: %.2f -> %.2f", _current_motor_value, motor_value);
+    } else {
+        _motor_value_cnt++;
+        if (_motor_value_cnt > _event_count_thd) {
+            forceMotorSet(_current_motor_value);
+        }
+    }
+}
+
+void EjectionController::setEnable (bool switch_value) {
+    if (_current_switch_value != switch_value) {
+        _current_switch_value = switch_value;
+        _switch_value_cnt = 0;
+        syslog(LOG_DEBUG, "EjectionController: changing switch value: %d -> %d", _current_switch_value, switch_value);
+    } else {
+        _switch_value_cnt++;
+        if (_switch_value_cnt > _event_count_thd) {
+            forceSetEnable (_current_switch_value);
+        }
+    }
 }
 
 EjectionController::~EjectionController () {
 
 }
-void EjectionController::loop () {
-    int ret = 0;
-    int outvalue = 0;
-    int errcode = errno;
-    /*if (_motor_enable_gpio_fd) {
-        if (_motor_enable) {
-            outvalue = 1;
-        } else {
-            outvalue = 0;
-        }
-        ret = ioctl(_motor_enable_gpio_fd, GPIOC_WRITE, outvalue);
-        if (ret < 0)
-        {
-            errcode = errno;
-            fprintf(stderr,
-            "ERROR: Failed to write value %u from %s: %d\n",
-                    (unsigned int)outvalue, _motor_enable_gpio_path.c_str(), errcode);
-        }
-    }
-    if (_direction_gpio_fd) {
-        if (_rotation_direction) {
-            outvalue = 1;
-        } else {
-            outvalue = 0;
-        }
-        ret = ioctl(_direction_gpio_fd, GPIOC_WRITE, outvalue);
-        if (ret < 0)
-        {
-            errcode = errno;
-            fprintf(stderr,
-            "ERROR: Failed to write value %u from %s: %d\n",
-            (unsigned int)outvalue, _direction_gpio_path.c_str(), errcode);
-        }
-    }
-    if (_motor_enable_gpio_fd) {
-        if (_rotation_enable) {
-            outvalue = 1;
-        } else {
-            outvalue = 0;
-        }
-        ret = ioctl(_rotation_gpio_fd, GPIOC_WRITE, outvalue);
-        if (ret < 0)
-        {
-            errcode = errno;
-            fprintf(stderr,
-            "ERROR: Failed to write value %u from %s: %d\n",
-            (unsigned int)outvalue, _rotation_gpio_path.c_str(), errcode);
-        }
-    } */
-}
+
 bool EjectionController::init (const char* direction_gpio_dev,
     const char* rotation_gpio_dev,
     const char* motor_enable_gpio_dev,
-    const char* angle_gpio_dev
+    const char* angle_gpio_dev,
+    const char* general_switch_gpio_dev
 ) {
     _direction_gpio.init (direction_gpio_dev);
     if (!_direction_gpio.isInit()) {
@@ -127,6 +116,14 @@ bool EjectionController::init (const char* direction_gpio_dev,
         syslog(LOG_DEBUG, "EjectionController: device %s PWM inited", angle_gpio_dev);
 #endif
     }
+    _switch_gpio.init (general_switch_gpio_dev);
+    if (!_switch_gpio.isInit()) {
+        syslog(LOG_ERR, "Unable to init output GPIO device %s", general_switch_gpio_dev);
+    } else {
+#ifdef SNOW_DEBUG
+        syslog(LOG_DEBUG, "EjectionController: device %s GPIO inited", general_switch_gpio_dev);
+#endif
+    }
     return true;
 }
 
@@ -135,6 +132,7 @@ void EjectionController::stop () {
     _rotation_gpio.setValue (false);
     _angle_pwm.setDutyCycle (0);
     _motor_pwm.setDutyCycle (0);
+    _switch_gpio.setValue (false);
 }
 
 bool EjectionController::forceMotorSet (float value) {
@@ -151,4 +149,8 @@ bool EjectionController::forceRotationSet (bool run, bool clockwise) {
 
 bool EjectionController::forceAngleSet (float value) {
     return _angle_pwm.setDutyCycle (value);
+}
+
+bool EjectionController::forceSetEnable (bool value) {
+    return _switch_gpio.setValue (value);
 }

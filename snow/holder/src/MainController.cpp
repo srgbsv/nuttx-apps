@@ -69,13 +69,13 @@ int MainController::stopCommand () {
 
 int MainController::startMain (int argc, char** argv) {
     printf ("startMain\n");
-    if (argc <= 1 || strcmp (argv[1], "-h") == 0 || strcmp (argv[1], "help") == 0
+    /*if (argc <= 1 || strcmp (argv[1], "-h") == 0 || strcmp (argv[1], "help") == 0
         || strcmp (argv[1], "info") == 0 || strcmp (argv[1], "usage") == 0) {
 #ifdef HOLDER_DEBUG
         printf("Command: PrintUsage\n");
 #endif
         return MainController::printUsage ();
-    }
+    }*/
 
     if (strcmp (argv[1], "start") == 0) {
 #ifdef HOLDER_DEBUG
@@ -98,7 +98,7 @@ int MainController::startMain (int argc, char** argv) {
         return MainController::statusCommand();
     }
 
-    return 1;
+    return MainController::startCommand(argc -1, argv + 1);
 }
 
 
@@ -197,8 +197,7 @@ bool MainController::updateState() {
 #ifdef HOLDER_DEBUG
     syslog(LOG_DEBUG, "MainController::updateState: New state: lift_value=[%d]\n",    lift_value);
 #endif
-    _body_controller.forceLiftSet (lift_value);
-    return true;
+    return _body_controller.setLift (lift_value);
 }
 
 void MainController::run() {

@@ -13,6 +13,10 @@ class BodyController {
 
     GpioOutput _lift_up_gpio;
     GpioOutput _lift_down_gpio;
+    const int _event_count_thd = 4;
+
+    int _lift_event_count = 0;
+    int _lift_value = 0;
 
     public:
 
@@ -26,6 +30,7 @@ class BodyController {
     ~BodyController ();
 
     bool forceLiftSet (int lift);
+    bool setLift (int lift);
 
     BodyController ();
 };

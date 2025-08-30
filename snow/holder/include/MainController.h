@@ -20,7 +20,7 @@ class MainController {
     };
 
     //Input signals
-    const char* _lift_enable_in       = "/dev/pwmin1";  // Lift pw input value
+    const char* _lift_enable_in       = "/dev/pwmin1";  // Lift pw input value PA8
 
     //Output signals
     const char* _lift_up_gpio         = "/dev/gpio1";   // Up gpio pin. PA3

@@ -10,17 +10,17 @@ InputController::InputController (
     const char* _motor_enable_dev,
     const char* _rotation_dev,
     const char* _ejection_dev,
-    const char* _test_btn_dev) {
-    init (_motor_enable_dev, _rotation_dev, _ejection_dev, _test_btn_dev);
+    const char* _general_switch_dev) {
+    init (_motor_enable_dev, _rotation_dev, _ejection_dev, _general_switch_dev);
 }
 
 bool InputController::init(
     const char* _motor_enable_dev,
     const char* _rotation_dev,
     const char* _ejection_dev,
-    const char* _test_btn_dev
+    const char* _general_switch_dev
 ) {
-    _pwm_input_motor.init(_motor_enable_dev, 4, 9);
+    _pwm_input_motor.init(_motor_enable_dev, 30, 100);
     if (!_pwm_input_motor.isInit ()) {
         syslog(LOG_ERR, "Can't input pwm device %s", _motor_enable_dev);
     } else {
@@ -28,7 +28,7 @@ bool InputController::init(
         syslog(LOG_DEBUG, "InputController: device %s PWM inited", _motor_enable_dev);
 #endif
     }
-    _pwm_input_rotation.init(_rotation_dev, 4, 9);
+    _pwm_input_rotation.init(_rotation_dev, 30, 100);
     if (!_pwm_input_rotation.isInit ()) {
         syslog(LOG_ERR, "Can't input pwm device %s", _rotation_dev);
     } else {
@@ -36,7 +36,7 @@ bool InputController::init(
         syslog(LOG_DEBUG, "InputController: device %s PWM inited", _rotation_dev);
 #endif
     }
-    _pwm_input_ejection.init(_ejection_dev, 4, 9);
+    _pwm_input_ejection.init(_ejection_dev, 30, 100);
     if (!_pwm_input_ejection.isInit()) {
         syslog(LOG_ERR, "Can't input pwm device %s", _ejection_dev);
     } else {
@@ -44,12 +44,12 @@ bool InputController::init(
         syslog(LOG_DEBUG, "InputController: device %s PWM inited", _ejection_dev);
 #endif
     }
-    _gpio_in_test_btn.init(_test_btn_dev);
-    if (!_gpio_in_test_btn.isInit()) {
-        syslog(LOG_ERR, "Can't input gpio device %s", _test_btn_dev);
+    _pwm_input_switch.init(_general_switch_dev, 30, 100);
+    if (!_pwm_input_switch.isInit()) {
+        syslog(LOG_ERR, "Can't input pwm device %s", _general_switch_dev);
     } else {
 #ifdef SNOW_DEBUG
-        syslog(LOG_DEBUG, "InputController: device %s GPIO inited", _test_btn_dev);
+        syslog(LOG_DEBUG, "InputController: device %s PWM inited", _general_switch_dev);
 #endif
     }
 
@@ -58,13 +58,17 @@ bool InputController::init(
 
 int InputController::getMotorValue() {
     auto motor_pwm = _pwm_input_motor.getDutyCycleNormalized();
-    if (motor_pwm > 50 && motor_pwm < 65) {
-        return 50;
+    if (motor_pwm < 0 || motor_pwm > 100) {
+        //Invalid PWM input
+        return -1;
+    } 
+    if (motor_pwm > 30 && motor_pwm <75) {
+        return 12;
     }
     if (motor_pwm >= 65) {
-        return 99;
+        return 32;
     }
-    return 0;
+    return 2;
 }
 
 int InputController::getMotorValueRaw () {
@@ -73,8 +77,12 @@ int InputController::getMotorValueRaw () {
 
 int InputController::getRotationValue() {
     auto rotation_pwm = _pwm_input_rotation.getDutyCycleNormalized();
-    if (rotation_pwm > 65) return 1;
-    if (rotation_pwm < 45) return -1;
+    if (rotation_pwm < 0 || rotation_pwm > 100) {
+        //Invalid PWM input
+        return 0;
+    } 
+    if (rotation_pwm > 75) return 1;
+    if (rotation_pwm < 25) return -1;
     return 0;
 }
 
@@ -83,13 +91,23 @@ int InputController::getRotationValueRaw () {
 }
 
 int InputController::getEjectionValue() {
-    return _pwm_input_ejection.getDutyCycleNormalized() / 11 + 3;
+    auto ejection_pwm =  _pwm_input_ejection.getDutyCycleNormalized();
+    if (ejection_pwm < 0 || ejection_pwm > 100) {
+        return -1;
+    }
+    if (ejection_pwm > 70) return 3;
+    if (ejection_pwm < 40) return 8; 
+    return 5;
 }
 
 int InputController::getEjectionValueRaw () {
     return _pwm_input_ejection.getDutyCycle();
 }
 
-bool InputController::isTestBtnPressed() {
-    return _gpio_in_test_btn.getState();
+int InputController::getSwitchValue() {
+    auto switch_value = _pwm_input_switch.getDutyCycleNormalized();
+    if (switch_value < 0 || switch_value > 100) {
+        return -1;
+    }
+    return switch_value < 50;
 }

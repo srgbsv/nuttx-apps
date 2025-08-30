@@ -49,8 +49,22 @@ void BodyController::stop () {
     _lift_up_gpio.setValue (false);
 }
 
-bool BodyController::forceLiftSet (int lift) {
+bool BodyController::setLift (int lift) {
+    if (lift != _lift_value) {
+        _lift_event_count = 0;
+        _lift_value = lift;
+        syslog(LOG_DEBUG, "BodyController: changing lift value: %d -> %d ", _lift_value, lift);
+    } else {
+        _lift_event_count++;
+        if (_lift_event_count > _event_count_thd) {
+            return forceLiftSet(lift);
+        }
+    }
 
+    return false;
+}
+
+bool BodyController::forceLiftSet (int lift) {
     if (_lift_up_gpio.isInit() && _lift_down_gpio.isInit()) {
         _lift_up_gpio.setValue(lift > 0 ? false : true);
         _lift_down_gpio.setValue(lift < 0 ? false : true);

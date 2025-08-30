@@ -12,7 +12,7 @@ class GpioOutput {
     int             _fd;
     bool            _inited = false;
     std::string     _devpath;
-    bool            _default = false;
+    bool            _default = true;
 
     public:
     GpioOutput() {};

@@ -28,9 +28,11 @@
 #include <sched.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/boardctl.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <sys/mount.h>
 
 #include "nshlib/nshlib.h"
 
@@ -67,6 +69,18 @@ int main(int argc, FAR char *argv[])
   /* Initialize the NSH library */
 
   nsh_initialize();
+
+  mount("binfs", "/bin", "binfs", MS_RDONLY, NULL);
+
+#ifdef CONFIG_SNOW_APP_SNOWBLOWER
+  printf ("Try to starting SNOWBLOWER\n");
+  execl("/bin/snowblower", "/bin/snowblower");
+#endif 
+
+#ifdef CONFIG_HOLDER_APP_HOLDER
+  printf ("Try to starting HOLDER\n");
+  execl("/bin/holder", "/bin/holder");
+#endif 
 
 #ifdef CONFIG_NSH_CONSOLE
   /* If the serial console front end is selected, run it on this thread */
