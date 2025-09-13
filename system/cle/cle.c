@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/system/cle/cle.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -35,6 +37,7 @@
 #include <syslog.h>
 #include <errno.h>
 #include <debug.h>
+#include <termios.h>
 
 #include <nuttx/ascii.h>
 #include <nuttx/vt100.h>
@@ -1050,7 +1053,19 @@ int cle_fd(FAR char *line, FAR const char *prompt, uint16_t linelen,
            int infd, int outfd)
 {
   FAR struct cle_s priv;
+  struct termios cfg;
   int ret;
+
+  if (isatty(infd))
+    {
+      tcgetattr(infd, &cfg);
+      if (cfg.c_lflag & ICANON)
+        {
+          cfg.c_lflag &= ~ICANON;
+          tcsetattr(infd, TCSANOW, &cfg);
+          cfg.c_lflag |= ICANON;
+        }
+    }
 
   /* Initialize the CLE state structure */
 
@@ -1115,6 +1130,11 @@ int cle_fd(FAR char *line, FAR const char *prompt, uint16_t linelen,
         }
     }
 #endif /* CONFIG_SYSTEM_CLE_CMD_HISTORY */
+
+  if (isatty(infd) && (cfg.c_lflag & ICANON))
+    {
+      tcsetattr(infd, TCSANOW, &cfg);
+    }
 
   return ret;
 }

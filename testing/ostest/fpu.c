@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/ostest/fpu.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -102,8 +104,13 @@ typedef uintptr_t   uintreg_t;
 
 struct fpu_threaddata_s
 {
+#if XCPTCONTEXT_ALIGN > 1
   uintreg_t save1[XCPTCONTEXT_REGS] aligned_data(XCPTCONTEXT_ALIGN);
   uintreg_t save2[XCPTCONTEXT_REGS] aligned_data(XCPTCONTEXT_ALIGN);
+#else
+  uintreg_t save1[XCPTCONTEXT_REGS];
+  uintreg_t save2[XCPTCONTEXT_REGS];
+#endif
 
   /* These are just dummy values to force the compiler to do the
    * requested floating point computations without the nonsense

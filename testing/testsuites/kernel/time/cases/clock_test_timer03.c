@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/time/cases/clock_test_timer03.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -61,7 +62,7 @@ void test_nuttx_clock_test_timer03(FAR void **state)
   int failed = 0;
   timer_t timerid;
   sigset_t set;
-  sigset_t old_set;
+  sigset_t oldset;
   struct sigevent sev;
 
   ret = sigemptyset(&set);
@@ -70,7 +71,7 @@ void test_nuttx_clock_test_timer03(FAR void **state)
   ret = sigaddset(&set, SIG);
   assert_int_equal(ret, 0);
 
-  ret = sigprocmask(SIG_BLOCK, &set, &old_set);
+  ret = sigprocmask(SIG_BLOCK, &set, &oldset);
   assert_int_equal(ret, 0);
 
   /* Create the timer */
@@ -82,24 +83,24 @@ void test_nuttx_clock_test_timer03(FAR void **state)
   syslog(LOG_INFO, "timer_create %p: %d", timerid, ret);
   assert_int_equal(ret, 0);
 
-  struct timespec testcases[] = {
-      {0, 30000000},
-      {1, 0},
-      {1, 5000},
-  };
+  struct timespec testcases[] =
+      {
+          {0, 30000000},
+          {1, 0},
+          {1, 5000},
+      };
 
-  struct timespec zero = {
-      0,
-      0,
-  };
+  struct timespec zero =
+      {
+        0, 0
+      };
 
   for (int i = 0; i < sizeof(testcases) / sizeof(testcases[0]); ++i)
     {
       struct timespec start;
       struct timespec end;
       struct itimerspec its;
-      int64_t expected;
-      int64_t escaped;
+      int64_t expected, escaped;
 
       its.it_interval = zero;
       its.it_value = testcases[i];
@@ -116,22 +117,21 @@ void test_nuttx_clock_test_timer03(FAR void **state)
       ret = clock_gettime(CLOCKID, &end);
       assert_int_equal(ret, 0);
 
-      expected = its.it_value.tv_sec * (int64_t)(1e9) + its.it_value.tv_nsec;
+      expected =
+          its.it_value.tv_sec * (int64_t)(1e9) + its.it_value.tv_nsec;
       escaped = end.tv_sec * (int64_t)(1e9) + end.tv_nsec -
                 start.tv_sec * (int64_t)(1e9) - start.tv_nsec;
 
-      /* 20000000, 2 ticks. */
-
-      failed += (escaped < expected || (escaped - expected) >= 20000000);
-      syslog(LOG_INFO,
-             "expected = %" PRId64 " escaped = %" PRId64 " failed = %d",
-             expected, escaped, failed);
+      failed += (escaped < expected ||
+                 (escaped - expected) >= 20000000); /* 20000000, 2 ticks. */
+      syslog(LOG_INFO, "expected = %" PRId64 " escaped = %" PRId64
+             "failed = %d", expected, escaped, failed);
     }
 
   ret = timer_delete(timerid);
   assert_int_equal(ret, 0);
 
-  ret = sigprocmask(SIG_SETMASK, &old_set, NULL);
+  ret = sigprocmask(SIG_SETMASK, &oldset, NULL);
   assert_int_equal(ret, 0);
 
   assert_int_equal(failed, 0);

@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/industry/foc/float/foc_feedforward.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -59,7 +61,7 @@ int foc_feedforward_pmsm_f32(FAR struct motor_phy_params_f32_s *phy,
    * so vq compensation must be negative here.
    */
 
-  vdq_comp->q = -vel_now * (phy->flux_link + phy->ind * idq->q);
+  vdq_comp->q = -vel_now * (phy->flux_link + phy->ind * idq->d);
   vdq_comp->d = vel_now * phy->ind * idq->q;
 
   return OK;

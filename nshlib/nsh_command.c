@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/nshlib/nsh_command.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -158,14 +160,12 @@ static const struct cmdmap_s g_cmdmap[] =
 #endif
 
 #ifndef CONFIG_NSH_DISABLE_CAT
-  CMD_MAP("cat",      cmd_cat,      2, CONFIG_NSH_MAXARGUMENTS,
-    "<path> [<path> [<path> ...]]"),
+  CMD_MAP("cat",      cmd_cat,      1, CONFIG_NSH_MAXARGUMENTS,
+    "[<path> [<path> [<path> ...]]]"),
 #endif
 
-#ifndef CONFIG_DISABLE_ENVIRON
-#  ifndef CONFIG_NSH_DISABLE_CD
+#ifndef CONFIG_NSH_DISABLE_CD
   CMD_MAP("cd",       cmd_cd,       1, 2, "[<dir-path>|-|~|..]"),
-#  endif
 #endif
 
 #ifndef CONFIG_NSH_DISABLE_CP
@@ -183,12 +183,6 @@ static const struct cmdmap_s g_cmdmap[] =
 #ifndef CONFIG_NSH_DISABLE_DATE
   CMD_MAP("date",     cmd_date,
           1, 4, "[-s \"MMM DD HH:MM:SS YYYY\"] [-u] [+format]"),
-#endif
-
-#ifndef CONFIG_NSH_DISABLE_DD
-  CMD_MAP("dd",       cmd_dd,       3, 7,
-    "if=<infile> of=<outfile> [bs=<sectsize>] [count=<sectors>] "
-    "[skip=<sectors>] [seek=<sectors>] [verify]"),
 #endif
 
 #if defined(CONFIG_NET) && defined(CONFIG_NET_ROUTE) && !defined(CONFIG_NSH_DISABLE_DELROUTE)
@@ -310,6 +304,10 @@ static const struct cmdmap_s g_cmdmap[] =
   CMD_MAP("kill",     cmd_kill,     2, 3, "[-<signal>] <pid>"),
 #endif
 
+#if defined(CONFIG_FS_PROCFS) && !defined(CONFIG_NSH_DISABLE_PKILL)
+  CMD_MAP("pkill",     cmd_pkill,     2, 3, "[-<signal>] <name>"),
+#endif
+
 #ifndef CONFIG_DISABLE_MOUNTPOINT
 #  if defined(CONFIG_DEV_LOOP) && !defined(CONFIG_NSH_DISABLE_LOSETUP)
   CMD_MAP("losetup",  cmd_losetup,  3, 6,
@@ -355,7 +353,8 @@ static const struct cmdmap_s g_cmdmap[] =
 
 #if defined(CONFIG_NETUTILS_CODECS) && defined(CONFIG_CODECS_HASH_MD5)
 #  ifndef CONFIG_NSH_DISABLE_MD5
-  CMD_MAP("md5",      cmd_md5,      2, 3, "[-f] <string or filepath>"),
+  CMD_MAP("md5",      cmd_md5,      1, 3,
+          "[string] or [-f <filepath>] or read stdin"),
 #  endif
 #endif
 
@@ -470,7 +469,8 @@ static const struct cmdmap_s g_cmdmap[] =
 #endif
 
 #ifndef CONFIG_NSH_DISABLE_PS
-  CMD_MAP("ps",       cmd_ps,       1, 1, NULL),
+  CMD_MAP("ps",       cmd_ps,       1, CONFIG_NSH_MAXARGUMENTS,
+    "<-heap> <pid1 pid2 ...>"),
 #endif
 
 #ifdef CONFIG_NET_UDP
@@ -480,10 +480,8 @@ static const struct cmdmap_s g_cmdmap[] =
 #  endif
 #endif
 
-#ifndef CONFIG_DISABLE_ENVIRON
-#  ifndef CONFIG_NSH_DISABLE_PWD
+#ifndef CONFIG_NSH_DISABLE_PWD
   CMD_MAP("pwd",      cmd_pwd,      1, 1, NULL),
-#  endif
 #endif
 
 #if !defined(CONFIG_NSH_DISABLE_READLINK) && defined(CONFIG_PSEUDOFS_SOFTLINKS)
@@ -505,7 +503,7 @@ static const struct cmdmap_s g_cmdmap[] =
 
 #ifdef NSH_HAVE_DIROPTS
 #  ifndef CONFIG_NSH_DISABLE_RM
-  CMD_MAP("rm",       cmd_rm,       2, 3, "[-r] <file-path>"),
+  CMD_MAP("rm",       cmd_rm,       2, 3, "[-rf] <file-path>"),
 #  endif
 #endif
 
@@ -590,6 +588,11 @@ static const struct cmdmap_s g_cmdmap[] =
           3, CONFIG_NSH_MAXARGUMENTS, "<expression>"),
 #endif
 
+#if !defined(CONFIG_NSH_DISABLE_TOP) && defined(NSH_HAVE_CPULOAD)
+  CMD_MAP("top",       cmd_top,       1, 5,
+          "[ -n <num> ][ -d <delay>] [ -p <pidlist>] [-h]"),
+#endif
+
 #ifndef CONFIG_NSH_DISABLE_TIME
   CMD_MAP("time",     cmd_time,     2, 2, "\"<command>\""),
 #endif
@@ -654,6 +657,11 @@ static const struct cmdmap_s g_cmdmap[] =
   CMD_MAP("usleep",   cmd_usleep,   2, 2, "<usec>"),
 #endif
 
+#ifndef CONFIG_NSH_DISABLE_WATCH
+  CMD_MAP("watch",     cmd_watch,
+          2, 6, "[-n] interval [-c] count <command>"),
+#endif
+
 #ifdef CONFIG_NET_TCP
 #  ifndef CONFIG_NSH_DISABLE_WGET
   CMD_MAP("wget",     cmd_wget,     2, 4, "[-o <local-path>] <url>"),
@@ -662,6 +670,12 @@ static const struct cmdmap_s g_cmdmap[] =
 
 #ifndef CONFIG_NSH_DISABLE_XD
   CMD_MAP("xd",       cmd_xd,       3, 3, "<hex-address> <byte-count>"),
+#endif
+#if !defined(CONFIG_NSH_DISABLE_WAIT) && defined(CONFIG_SCHED_WAITPID) && \
+    !defined(CONFIG_DISABLE_PTHREAD) && defined(CONFIG_FS_PROCFS) && \
+    !defined(CONFIG_FS_PROCFS_EXCLUDE_PROCESS)
+  CMD_MAP("wait",     cmd_wait,     1, CONFIG_NSH_MAXARGUMENTS,
+          "pid1 [pid2 [pid3] ...]"),
 #endif
   CMD_MAP(NULL,       NULL,         1, 1, NULL)
 };
@@ -886,7 +900,7 @@ static inline void help_builtins(FAR struct nsh_vtbl_s *vtbl)
 
   char line[HELP_LINELEN + HELP_TABSIZE + 1];
 
-  static const char *g_builtin_prompt = "\nBuiltin Apps:\n";
+  static FAR const char *const g_builtin_prompt = "\nBuiltin Apps:\n";
 
   /* Count the number of built-in commands and get the optimal column width */
 
@@ -1199,10 +1213,14 @@ static int cmd_expr(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv)
 
 int nsh_command(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char *argv[])
 {
-  const struct cmdmap_s *cmdmap;
-  const char            *cmd;
-  nsh_cmd_t              handler = cmd_unrecognized;
-  int                    ret;
+  const struct cmdmap_s  *cmdmap;
+  const char             *cmd;
+  nsh_cmd_t               handler = cmd_unrecognized;
+#ifdef CONFIG_NSH_BUILTIN_AS_COMMAND
+  const struct builtin_s *builtin;
+  int                     index;
+#endif
+  int                     ret;
 
   /* The form of argv is:
    *
@@ -1213,6 +1231,23 @@ int nsh_command(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char *argv[])
    */
 
   cmd = argv[0];
+
+#ifdef CONFIG_NSH_BUILTIN_AS_COMMAND
+  /* Check if the command is available in the builtin list */
+
+  index = builtin_isavail(cmd);
+
+  if (index > 0)
+    {
+      /* Get the builtin structure by index */
+
+      builtin = builtin_for_index(index);
+      if (builtin != NULL)
+        {
+          return (builtin->main)(argc, (FAR char **)argv);
+        }
+    }
+#endif
 
   /* See if the command is one that we understand */
 
@@ -1252,6 +1287,7 @@ int nsh_command(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char *argv[])
     }
 
   ret = handler(vtbl, argc, argv);
+  vtbl->np.np_lastpid = getpid();
   return ret;
 }
 

@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/sched/cases/api_task_test_004.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdio.h>
 #include <syslog.h>
@@ -47,10 +48,10 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Name: sched_task04_routine
+ * Name: schedtask04routine
  ****************************************************************************/
 
-static int sched_task04_routine(int argc, char *argv[])
+static int schedtask04routine(int argc, char *argv[])
 {
   for (int i = 0; i < 5; i++)
     {
@@ -75,13 +76,12 @@ void test_nuttx_sched_task04(FAR void **state)
   pid_t pid;
   int status;
   int ret;
-
   struct sched_param task_entry_param;
 
   /* create a test task */
 
-  pid = task_create("sched_task04_routine", TASK_PRIORITY,
-                    DEFAULT_STACKSIZE, sched_task04_routine, NULL);
+  pid = task_create("schedtask04routine", TASK_PRIORITY,
+                    DEFAULT_STACKSIZE, schedtask04routine, NULL);
   assert_true(pid > 0);
   ret = sched_getparam(pid, &task_entry_param);
   assert_int_equal(ret, 0);

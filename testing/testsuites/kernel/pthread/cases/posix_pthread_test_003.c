@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/pthread/cases/posix_pthread_test_003.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,12 +23,10 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 #include <stdint.h>
-
 #include "PthreadTest.h"
 
 /****************************************************************************
@@ -37,19 +37,19 @@
  * Public Functions
  ****************************************************************************/
 
-static void *thread_f01(void *arg)
+static void *threadf01(void *arg)
 {
   pthread_exit(NULL);
   return NULL;
 }
 
 /****************************************************************************
- * Name: TestNuttxPthreadTest03
+ * Name: test_nuttx_pthread_test03
  ****************************************************************************/
 
 void test_nuttx_pthread_test03(FAR void **state)
 {
-  pthread_t a_thread;
+  pthread_t athread;
   pthread_t ptid;
   pthread_t a = 0;
   pthread_t b = 0;
@@ -65,7 +65,7 @@ void test_nuttx_pthread_test03(FAR void **state)
   ptid = pthread_self();
   syslog(LOG_INFO, "ptid: %d \n", ptid);
   assert_int_not_equal(ptid, 0);
-  pthread_create(&a_thread, NULL, thread_f01, NULL);
+  pthread_create(&athread, NULL, threadf01, NULL);
 
   tmp = pthread_equal(a, b);
   syslog(LOG_INFO, "ret: %d\n", tmp);
@@ -83,7 +83,7 @@ void test_nuttx_pthread_test03(FAR void **state)
 
   pthread_attr_destroy(&aa);
 
-  ret = pthread_join(a_thread, NULL);
+  ret = pthread_join(athread, NULL);
   syslog(LOG_INFO, "ret of pthread_join: %d\n", ret);
   assert_int_equal(ret, 0);
 }

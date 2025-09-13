@@ -1,6 +1,8 @@
 //***************************************************************************
 // apps/crypto/controlse/cmbedtls_se05x_extensions.hxx
 //
+// SPDX-License-Identifier: Apache-2.0
+//
 // Licensed to the Apache Software Foundation (ASF) under one or more
 // contributor license agreements.  See the NOTICE file distributed with
 // this work for additional information regarding copyright ownership.  The
@@ -89,7 +91,7 @@ public:
     return result;
   }
 
-  static int ecdsa_sign_wrap(void *ctx, mbedtls_md_type_t md_alg,
+  static int ecdsa_sign_wrap(mbedtls_pk_context *pk, mbedtls_md_type_t md_alg,
                              const unsigned char *hash, size_t hash_len,
                              unsigned char *sig, size_t sig_size,
                              size_t *sig_len,
@@ -97,7 +99,8 @@ public:
                              void *p_rng)
   {
 
-    mbedtls_ecp_keypair *key = reinterpret_cast<mbedtls_ecp_keypair *>(ctx);
+    mbedtls_ecp_keypair *key =
+        reinterpret_cast<mbedtls_ecp_keypair *>(pk->pk_ctx);
     auto se05x_ctx = reinterpret_cast<mbedtls_se05x_ctx *>(key->d.p);
 
     struct se05x_signature_s args

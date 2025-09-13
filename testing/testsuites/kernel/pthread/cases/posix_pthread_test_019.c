@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/pthread/cases/posix_pthread_test_019.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <sys/syscall.h>
 #include <unistd.h>
@@ -37,39 +38,39 @@
  * Public Functions
  ****************************************************************************/
 
-static void pthread_once_f01(void)
+static void pthreadoncef01(void)
 {
-  g_test_pthread_count++;
+  g_testpthreadcount++;
 }
 
 /****************************************************************************
- * Name: TestNuttxPthreadTest19
+ * Name: test_nuttx_pthread_test19
  ****************************************************************************/
 
 void test_nuttx_pthread_test19(FAR void **state)
 {
   UINT32 ret;
-  pthread_once_t once_block = PTHREAD_ONCE_INIT;
+  pthread_once_t onceblock = PTHREAD_ONCE_INIT;
 
-  g_test_pthread_count = 0;
+  g_testpthreadcount = 0;
 
-  ret = pthread_once(NULL, pthread_once_f01);
+  ret = pthread_once(NULL, pthreadoncef01);
   syslog(LOG_INFO, "ret: %d \n", ret);
   assert_int_equal(ret, EINVAL);
 
-  ret = pthread_once(&once_block, NULL);
+  ret = pthread_once(&onceblock, NULL);
   syslog(LOG_INFO, "ret: %d \n", ret);
   assert_int_equal(ret, EINVAL);
 
-  ret = pthread_once(&once_block, pthread_once_f01);
+  ret = pthread_once(&onceblock, pthreadoncef01);
   syslog(LOG_INFO, "ret: %d \n", ret);
   assert_int_equal(ret, 0);
-  syslog(LOG_INFO, "g_testPthreadCount: %d \n", g_test_pthread_count);
-  assert_int_equal(g_test_pthread_count, 1);
+  syslog(LOG_INFO, "g_testpthreadcount: %d \n", g_testpthreadcount);
+  assert_int_equal(g_testpthreadcount, 1);
 
-  ret = pthread_once(&once_block, pthread_once_f01);
+  ret = pthread_once(&onceblock, pthreadoncef01);
   syslog(LOG_INFO, "ret: %d \n", ret);
-  syslog(LOG_INFO, "g_testPthreadCount: %d \n", g_test_pthread_count);
+  syslog(LOG_INFO, "g_testpthreadcount: %d \n", g_testpthreadcount);
   assert_int_equal(ret, 0);
-  assert_int_equal(g_test_pthread_count, 1);
+  assert_int_equal(g_testpthreadcount, 1);
 }

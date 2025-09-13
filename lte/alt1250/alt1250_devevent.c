@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/lte/alt1250/alt1250_devevent.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -59,7 +61,8 @@
 
 static int handle_replypkt(FAR struct alt1250_s *dev,
                            FAR struct alt_container_s *reply,
-                           FAR int32_t *usock_result, uint32_t *usock_xid,
+                           FAR int32_t *usock_result,
+                           FAR uint32_t *usock_xid,
                            FAR struct usock_ackinfo_s *ackinfo)
 {
   int ret;

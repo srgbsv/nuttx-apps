@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/system/adb/adb_main.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -24,8 +26,11 @@
 
 #include "adb.h"
 
-#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <syslog.h>
+#include <nuttx/streams.h>
 
 #if defined(CONFIG_ADBD_BOARD_INIT) || defined (CONFIG_BOARDCTL_RESET) || \
     defined(CONFIG_ADBD_USB_BOARDCTL)
@@ -35,6 +40,16 @@
 #ifdef CONFIG_ADBD_NET_INIT
 #  include "netutils/netinit.h"
 #endif
+
+#define ADB_WAIT_EP_READY(ep)             \
+  {                                       \
+    struct stat sb;                       \
+                                          \
+    while (stat(ep, &sb) != 0)            \
+      {                                   \
+        usleep(500000);                   \
+      };                                  \
+  }
 
 /****************************************************************************
  * Public Functions
@@ -143,6 +158,10 @@ int main(int argc, FAR char **argv)
       return 1;
     }
 #endif /* ADBD_USB_BOARDCTL */
+
+  ADB_WAIT_EP_READY("/dev/adb0/ep0");
+  ADB_WAIT_EP_READY("/dev/adb0/ep1");
+  ADB_WAIT_EP_READY("/dev/adb0/ep2");
 
 #ifdef CONFIG_ADBD_NET_INIT
   /* Bring up the network */

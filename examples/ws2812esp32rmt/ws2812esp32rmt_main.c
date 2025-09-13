@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/examples/ws2812esp32rmt/ws2812esp32rmt_main.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -157,15 +159,15 @@ int main(int argc, FAR char *argv[])
 
   uint32_t n_leds = atoi(argv[2]);
 
-  char dev_name[50];
-  snprintf(dev_name, 50, "/dev/rmt%d", ch_idx);
-  fd = open(dev_name, O_WRONLY);
+  char devname[50];
+  snprintf(devname, sizeof(devname), "/dev/rmt%d", ch_idx);
+  fd = open(devname, O_WRONLY);
   if (fd < 0)
     {
       fprintf(stderr,
               "%s: open %s failed: %d\n",
               argv[0],
-              dev_name,
+              devname,
               errno);
       goto errout_with_dev;
     }

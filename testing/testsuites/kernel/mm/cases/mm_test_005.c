@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/mm/cases/mm_test_005.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdlib.h>
 #include <syslog.h>
@@ -43,14 +44,14 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Name: TestNuttxMm05
+ * Name: test_nuttx_mm05
  ****************************************************************************/
 
 void test_nuttx_mm05(FAR void **state)
 {
-  int i = 0;
+  int i;
   int flag = 0;
-  char *ptr = NULL;
+  char *ptr;
   char *temp_ptr = NULL;
 
   ptr = temp_ptr = zalloc(1024 * sizeof(char));

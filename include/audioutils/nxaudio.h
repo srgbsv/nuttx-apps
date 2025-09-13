@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/include/audioutils/nxaudio.h
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -69,6 +71,8 @@ int init_nxaudio_devname(FAR struct nxaudio_s *nxaudio,
 void fin_nxaudio(FAR struct nxaudio_s *nxaudio);
 int nxaudio_enqbuffer(FAR struct nxaudio_s *nxaudio,
                       FAR struct ap_buffer_s *apb);
+int nxaudio_pause(FAR struct nxaudio_s *nxaudio);
+int nxaudio_resume(FAR struct nxaudio_s *nxaudio);
 int nxaudio_setvolume(FAR struct nxaudio_s *nxaudio, uint16_t vol);
 int nxaudio_start(FAR struct nxaudio_s *nxaudio);
 int nxaudio_msgloop(FAR struct nxaudio_s *nxaudio,

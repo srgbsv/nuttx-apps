@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/time/cases/clock_test_clock02.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdio.h>
 #include <unistd.h>

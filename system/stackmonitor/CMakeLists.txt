@@ -1,6 +1,8 @@
 # ##############################################################################
 # apps/system/stackmonitor/CMakeLists.txt
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
 # additional information regarding copyright ownership.  The ASF licenses this
@@ -19,5 +21,7 @@
 # ##############################################################################
 
 if(CONFIG_SYSTEM_STACKMONITOR)
-  nuttx_add_application(NAME stackmonitor)
+  nuttx_add_application(NAME stackmonitor_start SRCS stackmonitor.c)
+
+  nuttx_add_application(NAME stackmonitor_stop)
 endif()

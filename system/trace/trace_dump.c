@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/system/trace/trace_dump.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -67,7 +69,7 @@ static void note_ioctl(int cmd, unsigned long arg)
 
 int trace_dump(FAR FILE *out)
 {
-  uint8_t tracedata[UCHAR_MAX];
+  uint8_t tracedata[1024];
   int ret;
   int fd;
 
@@ -85,7 +87,12 @@ int trace_dump(FAR FILE *out)
   while (1)
     {
       ret = read(fd, tracedata, sizeof tracedata);
-      if (ret <= 0)
+      if (ret < 0 || ret > sizeof(tracedata))
+        {
+          fprintf(stderr, "trace: read error: %d, errno:%d\n", ret, errno);
+          continue;
+        }
+      else if (ret == 0)
         {
           break;
         }

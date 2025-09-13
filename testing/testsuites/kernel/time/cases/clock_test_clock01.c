@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/time/cases/clock_test_clock01.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -65,9 +66,11 @@ void test_nuttx_clock_test_clock01(FAR void **state)
   assert_int_equal(ret, 0);
 
   syslog(LOG_INFO, "sleep 2 seconds\n");
-  sleep(2); /* 2, seconds. */
+  sleep(2);
 
-  tp.tv_sec = oldtp.tv_sec + 2; /* 2, use for testing clock setting */
+  /* 2, use for testing clock setting */
+
+  tp.tv_sec = oldtp.tv_sec + 2;
   tp.tv_nsec = oldtp.tv_nsec;
 
   /* set real time */
@@ -83,15 +86,12 @@ void test_nuttx_clock_test_clock01(FAR void **state)
 
   ret = clock_gettime(clk, &tp);
   syslog(LOG_INFO,
-         "Obtaining the current time after setting:"
-         " sec = %lld, nsec = %ld\n",
-         (long long)tp.tv_sec,
-         tp.tv_nsec);
-
-  /* 2, use for testing clock setting */
-
-  passflag = (tp.tv_sec >= 2 + oldtp.tv_sec)
-             && (tp.tv_sec <= 2 + oldtp.tv_sec + 1);
+         "Obtaining the current time after setting: sec = %lld, nsec = "
+         "%ld\n",
+         (long long)tp.tv_sec, tp.tv_nsec);
+  passflag = (tp.tv_sec >= 2 + oldtp.tv_sec) &&
+             (tp.tv_sec <=
+              2 + oldtp.tv_sec + 1); /* 2, use for testing clock setting */
 
   assert_int_equal(ret, 0);
   assert_int_equal(passflag, 1);

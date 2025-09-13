@@ -1,14 +1,10 @@
 /****************************************************************************
  * apps/wireless/wapi/src/wapi.c
  *
- *   Copyright (C) 2011, 2017, 2019 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
- *
- * Largely and original work, but highly influenced by sampled code provided
- * with WAPI:
- *
- *   Copyright (c) 2010, Volkan YAZICI <volkan.yazici@gmail.com>
- *   All rights reserved.
+ * SPDX-License-Identifier: BSD-2-Clause
+ * SPDX-FileCopyrightText: 2011,2017,2019 Gregory Nutt. All rights reserved.
+ * SPDX-FileCopyrightText: 2010 Volkan YAZICI <volkan.yazici@gmail.com>
+ * SPDX-FileContributor: Gregory Nutt <gnutt@nuttx.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -105,6 +101,7 @@ static int wapi_reconnect_cmd    (int sock, int argc, FAR char **argv);
 static int wapi_save_config_cmd  (int sock, int argc, FAR char **argv);
 #endif
 static int wapi_pta_prio_cmd     (int sock, int argc, FAR char **argv);
+static int wapi_power_save_cmd   (int sock, int argc, FAR char **argv);
 
 /****************************************************************************
  * Private Data
@@ -134,6 +131,7 @@ static const struct wapi_command_s g_wapi_commands[] =
   {"save_config",  1, 1, wapi_save_config_cmd},
 #endif
   {"pta_prio",     2, 2, wapi_pta_prio_cmd},
+  {"power_save",   2, 2, wapi_power_save_cmd},
 };
 
 /****************************************************************************
@@ -909,6 +907,7 @@ static int wapi_country_cmd(int sock, int argc, FAR char **argv)
 
   if (argc == 1)
     {
+      memset(country, 0, sizeof(country));
       ret = wapi_get_country(sock, argv[0], country);
       if (ret >= 0)
         {
@@ -1111,6 +1110,31 @@ static int wapi_pta_prio_cmd(int sock, int argc, FAR char **argv)
 }
 
 /****************************************************************************
+ * Name: wapi_power_save_cmd
+ *
+ * Description:
+ *   Manually configure the power save status.
+ *
+ * Returned Value:
+ *   None
+ *
+ ****************************************************************************/
+
+static int wapi_power_save_cmd(int sock, int argc, FAR char **argv)
+{
+  bool on = false;
+
+  if (strcmp(argv[1], "on") == 0)
+    {
+      on = true;
+    }
+
+  /* Set power save status */
+
+  return wapi_set_power_save(sock, argv[0], on);
+}
+
+/****************************************************************************
  * Name: wapi_showusage
  *
  * Description:
@@ -1154,7 +1178,7 @@ static void wapi_showusage(FAR const char *progname, int exitcode)
   fprintf(stderr, "\t%s save_config  <ifname>\n", progname);
 #endif
   fprintf(stderr, "\t%s pta_prio     <ifname>  <index/flag>\n", progname);
-
+  fprintf(stderr, "\t%s power_save   <ifname>  <on|off>\n", progname);
   fprintf(stderr, "\t%s help\n", progname);
 
   fprintf(stderr, "\nFrequency Flags:\n");

@@ -125,14 +125,6 @@ config NSH_CLE
 
 endchoice
 
-config NSH_LINELEN
-	int "Max command line length"
-	default 64 if DEFAULT_SMALL
-	default 80 if !DEFAULT_SMALL
-	---help---
-		The maximum length of one command line and of one output line.
-		Default: 64/80
-
 config NSH_DISABLE_SEMICOLON
 	bool "Disable multiple commands per line"
 	default DEFAULT_SMALL
@@ -231,6 +223,13 @@ config NSH_ALIAS_MAX_AMOUNT
 
 endif # NSH_ALIAS
 
+config NSH_PIPELINE
+	bool "Enable pipeline support"
+	default !DEFAULT_SMALL
+	depends on PIPES
+	---help---
+		Enable pipeline support for nsh.
+
 endmenu # Command Line Configuration
 
 config NSH_BUILTIN_APPS
@@ -242,6 +241,14 @@ config NSH_BUILTIN_APPS
 		executed from the NSH command line (see apps/README.txt for
 		more information).  This options requires support for builtin
 		applications (BUILTIN).
+
+config NSH_BUILTIN_AS_COMMAND
+	bool "Run builtin apps as command"
+	default n
+	depends on BUILTIN
+	---help---
+		Enable to run builtin application directly without creating
+		a separate thread.
 
 config NSH_FILE_APPS
 	bool "Enable execution of program files"
@@ -346,10 +353,6 @@ config NSH_DISABLE_DATE
 	bool "Disable date"
 	default DEFAULT_SMALL || !RTC
 
-config NSH_DISABLE_DD
-	bool "Disable dd"
-	default DEFAULT_SMALL
-
 config NSH_DISABLE_DF
 	bool "Disable df"
 	default DEFAULT_SMALL
@@ -428,6 +431,11 @@ config NSH_DISABLE_KILL
 	bool "Disable kill"
 	default DEFAULT_SMALL
 
+config NSH_DISABLE_PKILL
+	bool "Disable pkill"
+	default DEFAULT_SMALL
+	depends on FS_PROCFS
+
 config NSH_DISABLE_LOSETUP
 	bool "Disable losetup"
 	default DEFAULT_SMALL
@@ -502,7 +510,7 @@ config NSH_DISABLE_MW
 	bool "Disable mw"
 	default y
 
-config NSH_DISABLE_NSFMOUNT
+config NSH_DISABLE_NFSMOUNT
 	bool "Disable nfsmount"
 	default DEFAULT_SMALL
 	depends on NFS
@@ -551,6 +559,13 @@ config NSH_DISABLE_PSSTACKUSAGE
 	default DEFAULT_SMALL
 	---help---
 		Disable to save space and not pull in floating point routines
+
+config NSH_DISABLE_PSSIGMASK
+	bool "Disable ps sigmask"
+	depends on !NSH_DISABLE_PS
+	default DEFAULT_SMALL
+	---help---
+		Disable sigmask print from ps
 
 config NSH_DISABLE_PUT
 	bool "Disable put"
@@ -632,6 +647,11 @@ config NSH_DISABLE_TEST
 	bool "Disable test"
 	default DEFAULT_SMALL
 
+config NSH_DISABLE_TOP
+	bool "Disable top"
+	default DEFAULT_SMALL
+	depends on !NSH_DISABLE_PS
+
 config NSH_DISABLE_TRUNCATE
 	bool "Disable truncate"
 	default DEFAULT_SMALL
@@ -693,6 +713,16 @@ config NSH_DISABLE_IRQ_AFFINITY
 	bool "Disable command of irq affinity"
 	default DEFAULT_SMALL
 	depends on BOARDCTL_IRQ_AFFINITY
+
+config NSH_DISABLE_WAIT
+	bool "Disable wait"
+	default DEFAULT_SMALL
+	depends on SCHED_WAITPID
+	depends on FS_PROCFS && !FS_PROCFS_EXCLUDE_PROCESS
+
+config NSH_DISABLE_WATCH
+	bool "Disable watch"
+	default DEFAULT_SMALL
 
 endmenu
 
@@ -760,11 +790,6 @@ config NSH_VARS
 		env            Lists all environment       Lists all environment
 		               variables                   variables
 		============== =========================== ===========================
-
-config NSH_CMDOPT_DD_STATS
-	bool "dd: Support transfer statistics"
-	default n
-	depends on !NSH_DISABLE_DD
 
 config NSH_CODECS_BUFSIZE
 	int "File buffer size used by CODEC commands"

@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/netutils/rexecd/rexecd.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -30,6 +32,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <poll.h>
+#include <syslog.h>
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -209,12 +212,12 @@ int main(int argc, FAR char **argv)
       default:
       case AF_INET:
         ((FAR struct sockaddr_in *)&addr)->sin_family = AF_INET;
-        ((FAR struct sockaddr_in *)&addr)->sin_port = REXECD_PORT;
+        ((FAR struct sockaddr_in *)&addr)->sin_port = htons(REXECD_PORT);
         ret = sizeof(struct sockaddr_in);
         break;
       case AF_INET6:
         ((FAR struct sockaddr_in6 *)&addr)->sin6_family = AF_INET6;
-        ((FAR struct sockaddr_in6 *)&addr)->sin6_port = REXECD_PORT;
+        ((FAR struct sockaddr_in6 *)&addr)->sin6_port = htons(REXECD_PORT);
         ret = sizeof(struct sockaddr_in6);
         break;
       case AF_RPMSG:
@@ -280,6 +283,7 @@ int main(int argc, FAR char **argv)
 attr_out:
   pthread_attr_destroy(&attr);
 err_out:
+  syslog(LOG_ERR, "rexecd failed ret:%d errno:%d\n", ret, errno);
   close(serv);
   return ret;
 }

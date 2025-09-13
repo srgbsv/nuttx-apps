@@ -1,19 +1,12 @@
 /****************************************************************************
  * apps/netutils/webserver/httpd.c
- * httpd Web server
  *
- *   Copyright (C) 2007-2009, 2011-2012 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
- *
- * This is a leverage of similar logic from uIP:
- *
- *   Author: Adam Dunkels <adam@sics.se>
- *   Copyright (c) 2004, Adam Dunkels.
- *   All rights reserved.
- *
- *   The uIP web server is a very simplistic implementation of an HTTP
- *   server. It can serve web pages and files from a read-only ROM
- *   filesystem, and provides a very small scripting language.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * SPDX-FileCopyrightText: 2011-2012 Gregory Nutt. All rights reserved.
+ * SPDX-FileCopyrightText: 2007-2009 Gregory Nutt. All rights reserved.
+ * SPDX-FileCopyrightText: 2004 Adam Dunkels. All rights reserved.
+ * SPDX-FileContributor: Gregory Nutt <gnutt@nuttx.org>
+ * SPDX-FileContributor: Adam Dunkels <adam@dunkels.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -768,7 +761,8 @@ static void single_server(uint16_t portno, pthread_startroutine_t handler,
   for (; ; )
     {
       addrlen = sizeof(struct sockaddr_in);
-      acceptsd = accept(listensd, (FAR struct sockaddr *)&myaddr, &addrlen);
+      acceptsd = accept4(listensd, (FAR struct sockaddr *)&myaddr, &addrlen,
+                         SOCK_CLOEXEC);
 
       if (acceptsd < 0)
         {

@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/mm/cases/mm_test_001.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdlib.h>
 #include <inttypes.h>
@@ -38,12 +39,12 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Name: TestNuttxMm01
+ * Name: test_nuttx_mm01
  ****************************************************************************/
 
 void test_nuttx_mm01(FAR void **state)
 {
-  int i = 0;
+  int i;
   int flag = 0;
   char *pm1;
   char *pm2;

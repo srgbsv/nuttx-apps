@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/sched/cases/api_pthread_test_009.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdio.h>
 #include <syslog.h>
@@ -43,26 +44,26 @@
  * Private Data
  ****************************************************************************/
 
-static sem_t sched_task09_sem;
+static sem_t schedtask09_sem;
 
 /****************************************************************************
  * Private Functions
  ****************************************************************************/
 
 /****************************************************************************
- * Name: sched_pthread09_threadroutine
+ * Name: schedpthread09threadroutine
  ****************************************************************************/
 
-static void *sched_pthread09_threadroutine(void *arg)
+static void *schedpthread09threadroutine(void *arg)
 {
   int i;
   int res;
   for (i = 0; i < 10; i++)
     {
-      res = sem_wait(&sched_task09_sem);
+      res = sem_wait(&schedtask09_sem);
       assert_int_equal(res, OK);
       (*((int *)arg))++;
-      res = sem_post(&sched_task09_sem);
+      res = sem_post(&schedtask09_sem);
       assert_int_equal(res, OK);
     }
 
@@ -83,14 +84,15 @@ void test_nuttx_sched_pthread09(FAR void **state)
   pthread_t pthread_id[10];
   int run_flag = 0;
 
-  res = sem_init(&sched_task09_sem, 0, 1);
+  res = sem_init(&schedtask09_sem, 0, 1);
   assert_int_equal(res, OK);
 
   int i;
   for (i = 0; i < 10; i++)
     {
-      res = pthread_create(&pthread_id[i], NULL,
-                           (void *)sched_pthread09_threadroutine, &run_flag);
+      res =
+          pthread_create(&pthread_id[i], NULL,
+                         (void *)schedpthread09threadroutine, &run_flag);
       assert_int_equal(res, OK);
     }
 
@@ -98,7 +100,7 @@ void test_nuttx_sched_pthread09(FAR void **state)
   for (j = 0; j < 10; j++)
     pthread_join(pthread_id[j], NULL);
 
-  res = sem_destroy(&sched_task09_sem);
+  res = sem_destroy(&schedtask09_sem);
   assert_int_equal(res, OK);
 
   assert_int_equal(run_flag, 100);

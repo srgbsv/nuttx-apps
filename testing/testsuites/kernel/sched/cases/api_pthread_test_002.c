@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/sched/cases/api_pthread_test_002.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdio.h>
 #include <syslog.h>
@@ -44,10 +45,10 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Name: sched_pthread02_threadroutine
+ * Name: schedpthread02threadroutine
  ****************************************************************************/
 
-static void *sched_pthread02_threadroutine(void *arg)
+static void *schedpthread02threadroutine(void *arg)
 {
   return NULL;
 }
@@ -87,7 +88,7 @@ void test_nuttx_sched_pthread02(FAR void **state)
 
   /* create thread */
 
-  pthread_create(&p_t, &attr, sched_pthread02_threadroutine, NULL);
+  pthread_create(&p_t, &attr, schedpthread02threadroutine, NULL);
 
   /* Wait for the child thread finish */
 

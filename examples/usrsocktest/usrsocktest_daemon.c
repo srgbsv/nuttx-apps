@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/examples/usrsocktest/usrsocktest_daemon.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -274,7 +276,7 @@ static FAR void *find_endpoint(FAR struct daemon_priv_s *priv,
                                in_addr_t ipaddr)
 {
   FAR struct sockaddr_in *endpaddr;
-  int ok;
+  int unused_data ok;
 
   endpaddr = malloc(sizeof(*endpaddr));
   usrsocktest_endp_malloc_cnt++;

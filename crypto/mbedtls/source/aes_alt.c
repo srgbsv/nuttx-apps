@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/crypto/mbedtls/source/aes_alt.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -51,6 +53,18 @@ int mbedtls_aes_setkey_enc(FAR mbedtls_aes_context *ctx,
                            FAR const unsigned char *key,
                            unsigned int keybits)
 {
+  switch (keybits)
+    {
+      case 128:
+        break;
+      case 192:
+        break;
+      case 256:
+        break;
+      default:
+        return MBEDTLS_ERR_AES_INVALID_KEY_LENGTH;
+    }
+
   memcpy(ctx->key, key, keybits / 8);
   ctx->dev.session.key = (caddr_t)ctx->key;
   ctx->dev.session.keylen = keybits / 8;
@@ -73,6 +87,11 @@ int mbedtls_aes_crypt_ecb(FAR mbedtls_aes_context *ctx,
 {
   int ret;
   unsigned char iv[16];
+
+  if (mode != MBEDTLS_AES_ENCRYPT && mode != MBEDTLS_AES_DECRYPT)
+    {
+      return MBEDTLS_ERR_AES_BAD_INPUT_DATA;
+    }
 
   ctx->dev.session.cipher = CRYPTO_AES_CBC;
   ret = cryptodev_get_session(&ctx->dev);
@@ -107,6 +126,16 @@ int mbedtls_aes_crypt_cbc(mbedtls_aes_context *ctx,
 {
   int ret;
 
+  if (mode != MBEDTLS_AES_ENCRYPT && mode != MBEDTLS_AES_DECRYPT)
+    {
+      return MBEDTLS_ERR_AES_BAD_INPUT_DATA;
+    }
+
+  if ((length % 16) != 0)
+    {
+      return MBEDTLS_ERR_AES_INVALID_INPUT_LENGTH;
+    }
+
   ctx->dev.session.cipher = CRYPTO_AES_CBC;
   ret = cryptodev_get_session(&ctx->dev);
   if (ret != 0)
@@ -140,6 +169,11 @@ int mbedtls_aes_crypt_ctr(FAR mbedtls_aes_context *ctx,
                           FAR unsigned char *output)
 {
   int ret;
+
+  if (*nc_off > 0x0f)
+    {
+      return MBEDTLS_ERR_AES_BAD_INPUT_DATA;
+    }
 
   ctx->dev.session.cipher = CRYPTO_AES_CTR;
   memcpy(ctx->key + ctx->dev.session.keylen,
@@ -183,14 +217,22 @@ int mbedtls_aes_xts_setkey_enc(FAR mbedtls_aes_xts_context *ctx,
                                FAR const unsigned char *key,
                                unsigned int keybits)
 {
-  return mbedtls_aes_setkey_enc(ctx, key, keybits);
+  if (keybits != 256 && keybits != 512)
+    {
+      return MBEDTLS_ERR_AES_INVALID_KEY_LENGTH;
+    }
+
+  memcpy(ctx->key, key, keybits / 8);
+  ctx->dev.session.key = (caddr_t)ctx->key;
+  ctx->dev.session.keylen = keybits / 8;
+  return 0;
 }
 
 int mbedtls_aes_xts_setkey_dec(FAR mbedtls_aes_xts_context *ctx,
                                FAR const unsigned char *key,
                                unsigned int keybits)
 {
-  return mbedtls_aes_setkey_dec(ctx, key, keybits);
+  return mbedtls_aes_xts_setkey_enc(ctx, key, keybits);
 }
 
 int mbedtls_aes_crypt_xts(FAR mbedtls_aes_xts_context *ctx,
@@ -202,6 +244,25 @@ int mbedtls_aes_crypt_xts(FAR mbedtls_aes_xts_context *ctx,
 {
   int ret;
   unsigned char iv[16];
+
+  if (mode != MBEDTLS_AES_ENCRYPT && mode != MBEDTLS_AES_DECRYPT)
+    {
+      return MBEDTLS_ERR_AES_BAD_INPUT_DATA;
+    }
+
+  /* Data units must be at least 16 bytes long. */
+
+  if (length < 16)
+    {
+      return MBEDTLS_ERR_AES_INVALID_INPUT_LENGTH;
+    }
+
+  /* NIST SP 800-38E disallows data units larger than 2**20 blocks. */
+
+  if (length > (1 << 20) * 16)
+    {
+      return MBEDTLS_ERR_AES_INVALID_INPUT_LENGTH;
+    }
 
   ctx->dev.session.cipher = CRYPTO_AES_XTS;
   ret = cryptodev_get_session(&ctx->dev);
@@ -238,6 +299,16 @@ int mbedtls_aes_crypt_cfb128(FAR mbedtls_aes_context *ctx,
 {
   int ret;
 
+  if (mode != MBEDTLS_AES_ENCRYPT && mode != MBEDTLS_AES_DECRYPT)
+    {
+      return MBEDTLS_ERR_AES_BAD_INPUT_DATA;
+    }
+
+  if (*iv_off > 15)
+    {
+      return MBEDTLS_ERR_AES_BAD_INPUT_DATA;
+    }
+
   ctx->dev.session.cipher = CRYPTO_AES_CFB_128;
   ret = cryptodev_get_session(&ctx->dev);
   if (ret != 0)
@@ -273,6 +344,11 @@ int mbedtls_aes_crypt_cfb8(FAR mbedtls_aes_context *ctx,
 {
   int ret;
 
+  if (mode != MBEDTLS_AES_ENCRYPT && mode != MBEDTLS_AES_DECRYPT)
+    {
+      return MBEDTLS_ERR_AES_BAD_INPUT_DATA;
+    }
+
   ctx->dev.session.cipher = CRYPTO_AES_CFB_8;
   ret = cryptodev_get_session(&ctx->dev);
   if (ret != 0)
@@ -305,6 +381,11 @@ int mbedtls_aes_crypt_ofb(FAR mbedtls_aes_context *ctx,
                           unsigned char *output)
 {
   int ret;
+
+  if (*iv_off > 15)
+    {
+      return MBEDTLS_ERR_AES_BAD_INPUT_DATA;
+    }
 
   ctx->dev.session.cipher = CRYPTO_AES_OFB;
   ret = cryptodev_get_session(&ctx->dev);

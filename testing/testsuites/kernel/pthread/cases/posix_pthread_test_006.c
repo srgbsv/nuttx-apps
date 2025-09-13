@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/pthread/cases/posix_pthread_test_006.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <sys/syscall.h>
 #include <unistd.h>
@@ -37,7 +38,7 @@
  * Public Functions
  ****************************************************************************/
 
-static void *thread_f01(void *arg)
+static void *threadf01(void *arg)
 {
   pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 
@@ -48,7 +49,7 @@ static void *thread_f01(void *arg)
 }
 
 /****************************************************************************
- * Name: TestNuttxPthreadTest06
+ * Name: test_nuttx_pthread_test06
  ****************************************************************************/
 
 void test_nuttx_pthread_test06(FAR void **state)
@@ -61,7 +62,7 @@ void test_nuttx_pthread_test06(FAR void **state)
 
   /* Create a new thread. */
 
-  if (pthread_create(&a, NULL, thread_f01, NULL) != 0)
+  if (pthread_create(&a, NULL, threadf01, NULL) != 0)
     {
       printf("Error creating thread\n");
       assert_int_equal(1, 0);
@@ -69,7 +70,7 @@ void test_nuttx_pthread_test06(FAR void **state)
 
   usleep(1000);
 
-  /* LOS_TaskDelay(1); */
+  /* los_taskdelay(1); */
 
   pthread_cancel(a);
 

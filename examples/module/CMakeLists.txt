@@ -1,6 +1,8 @@
 # ##############################################################################
 # apps/examples/module/CMakeLists.txt
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
 # additional information regarding copyright ownership.  The ASF licenses this
@@ -18,6 +20,5 @@
 #
 # ##############################################################################
 
-if(CONFIG_EXAMPLES_MODULE)
-  nuttx_add_application(NAME module)
-endif()
+nuttx_add_subdirectory()
+nuttx_generate_kconfig(MENUDESC "Module")

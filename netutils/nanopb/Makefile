@@ -1,6 +1,8 @@
 ############################################################################
 # apps/netutils/nanopb/Makefile
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.  The
@@ -39,7 +41,7 @@ $(NANOPB_TARBALL):
 
 $(NANOPB_UNPACK): $(NANOPB_TARBALL)
 	$(Q) tar zxf $(NANOPB_TARBALL)
-	$(Q) mv nanopb-$(NANOPB_VERSION)-linux-x86 $(NANOPB_UNPACK)
+	$(Q) mv $(NANOPB_NAME) $(NANOPB_UNPACK)
 	$(Q) mv $(NANOPB_TARBALL) $(NANOPB_UNPACK)
 
 ifeq ($(wildcard $(NANOPB_UNPACK)),)

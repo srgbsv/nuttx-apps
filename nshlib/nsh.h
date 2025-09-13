@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/nshlib/nsh.h
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -39,6 +41,7 @@
 #endif
 
 #include <nuttx/usb/usbdev_trace.h>
+#include <nshlib/nshlib.h>
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -376,12 +379,6 @@
 #  define NSH_HERRNO_OF(err) (err)
 #endif
 
-/* Maximum size of one command line (telnet or serial) */
-
-#ifndef CONFIG_NSH_LINELEN
-#  define CONFIG_NSH_LINELEN 80
-#endif
-
 /* The maximum number of nested if-then[-else]-fi sequences that
  * are permissible.
  */
@@ -654,15 +651,21 @@ enum nsh_npflags_e
 struct nsh_parser_s
 {
 #ifndef CONFIG_NSH_DISABLEBG
-  bool     np_bg;       /* true: The last command executed in background */
+  bool     np_bg;        /* true: The last command executed in background */
 #endif
-  bool     np_redirect; /* true: Output from the last command was re-directed */
-  bool     np_fail;     /* true: The last command failed */
+  bool     np_redir_out; /* true: Output from the last command was re-directed */
+  bool     np_redir_in;  /* true: Input from the last command was re-directed */
+  bool     np_fail;      /* true: The last command failed */
+  pid_t    np_lastpid;   /* Pid of the last command executed */
+#ifdef NSH_HAVE_VARS
+  char     np_pids[32];  /* String representation of the last pid */
+#endif
+
 #ifndef CONFIG_NSH_DISABLESCRIPT
-  uint8_t  np_flags;    /* See nsh_npflags_e above */
+  uint8_t  np_flags;     /* See nsh_npflags_e above */
 #endif
 #ifndef CONFIG_NSH_DISABLEBG
-  int      np_nice;     /* "nice" value applied to last background cmd */
+  int      np_nice;      /* "nice" value applied to last background cmd */
 #endif
 
 #ifndef CONFIG_NSH_DISABLESCRIPT
@@ -852,18 +855,18 @@ int nsh_command(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char *argv[]);
 
 #ifdef CONFIG_NSH_BUILTIN_APPS
 int nsh_builtin(FAR struct nsh_vtbl_s *vtbl, FAR const char *cmd,
-                FAR char **argv, FAR const char *redirfile, int oflags);
+                FAR char **argv, FAR const struct nsh_param_s *param);
 #endif
 
 #ifdef CONFIG_NSH_FILE_APPS
 int nsh_fileapp(FAR struct nsh_vtbl_s *vtbl, FAR const char *cmd,
-                FAR char **argv, FAR const char *redirfile, int oflags);
+                FAR char **argv, FAR const struct nsh_param_s *param);
 #endif
 
-#ifndef CONFIG_DISABLE_ENVIRON
 /* Working directory support */
 
-FAR const char *nsh_getcwd(void);
+FAR const char *nsh_getcwd(FAR struct nsh_vtbl_s *vtbl);
+#ifndef CONFIG_DISABLE_ENVIRON
 FAR char *nsh_getfullpath(FAR struct nsh_vtbl_s *vtbl,
                           FAR const char *relpath);
 void nsh_freefullpath(FAR char *fullpath);
@@ -921,6 +924,9 @@ void nsh_usbtrace(void);
 #ifndef CONFIG_NSH_DISABLE_TIME
   int cmd_time(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv);
 #endif
+#if !defined(CONFIG_NSH_DISABLE_TOP) && defined(NSH_HAVE_CPULOAD)
+  int cmd_top(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv);
+#endif
 #ifndef CONFIG_NSH_DISABLE_PS
   int cmd_ps(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv);
 #endif
@@ -968,9 +974,6 @@ int cmd_irqinfo(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv);
 #endif
 #ifndef CONFIG_NSH_DISABLE_CMP
   int cmd_cmp(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv);
-#endif
-#ifndef CONFIG_NSH_DISABLE_DD
-  int cmd_dd(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv);
 #endif
 #ifndef CONFIG_NSH_DISABLE_HEXDUMP
   int cmd_hexdump(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv);
@@ -1061,14 +1064,12 @@ int cmd_irqinfo(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv);
 #  endif
 #endif /* !CONFIG_DISABLE_MOUNTPOINT */
 
-#if !defined(CONFIG_DISABLE_ENVIRON)
-#  ifndef CONFIG_NSH_DISABLE_CD
+#ifndef CONFIG_NSH_DISABLE_CD
   int cmd_cd(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv);
-#  endif
-#  ifndef CONFIG_NSH_DISABLE_PWD
+#endif
+#ifndef CONFIG_NSH_DISABLE_PWD
   int cmd_pwd(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv);
-#  endif
-#endif /* !CONFIG_DISABLE_MOUNTPOINT */
+#endif
 
 #ifndef CONFIG_NSH_DISABLE_ENV
   int cmd_env(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv);
@@ -1178,6 +1179,9 @@ int cmd_switchboot(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv);
 #ifndef CONFIG_NSH_DISABLE_KILL
   int cmd_kill(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv);
 #endif
+#if defined(CONFIG_FS_PROCFS) && !defined(CONFIG_NSH_DISABLE_PKILL)
+  int cmd_pkill(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv);
+#endif
 #ifndef CONFIG_NSH_DISABLE_SLEEP
   int cmd_sleep(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv);
 #endif
@@ -1218,6 +1222,16 @@ int cmd_switchboot(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv);
 #ifdef CONFIG_NSH_ALIAS
 int cmd_alias(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv);
 int cmd_unalias(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv);
+#endif
+
+#ifndef CONFIG_NSH_DISABLE_WATCH
+int cmd_watch(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv);
+#endif
+
+#if !defined(CONFIG_NSH_DISABLE_WAIT) && defined(CONFIG_SCHED_WAITPID) && \
+    !defined(CONFIG_DISABLE_PTHREAD) && defined(CONFIG_FS_PROCFS) && \
+    !defined(CONFIG_FS_PROCFS_EXCLUDE_PROCESS)
+int cmd_wait(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char **argv);
 #endif
 
 /****************************************************************************
@@ -1378,7 +1392,7 @@ int nsh_foreach_direntry(FAR struct nsh_vtbl_s *vtbl, FAR const char *cmd,
  *
  ****************************************************************************/
 
-#if defined(CONFIG_FS_PROCFS) && !defined(CONFIG_NSH_DISABLE_PIDOF)
+#ifdef CONFIG_FS_PROCFS
 ssize_t nsh_getpid(FAR struct nsh_vtbl_s *vtbl, FAR const char *name,
                    FAR pid_t *pids, size_t count);
 #endif

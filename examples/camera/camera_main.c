@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/examples/camera/camera_main.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -60,7 +62,7 @@
 #define APP_STATE_UNDER_CAPTURE   (1)
 #define APP_STATE_AFTER_CAPTURE   (2)
 
-#define CAMERA_DEV_PATH "/dev/video10"
+#define CAMERA_DEV_PATH "/dev/video"
 
 /****************************************************************************
  * Private Types
@@ -512,7 +514,7 @@ int main(int argc, FAR char *argv[])
 
   /* Open the device file. */
 
-  v_fd = open("/dev/video", 0);
+  v_fd = open(CAMERA_DEV_PATH, 0);
   if (v_fd < 0)
     {
       printf("ERROR: Failed to open video.errno = %d\n", errno);
@@ -678,7 +680,7 @@ int main(int argc, FAR char *argv[])
               {
                 gettimeofday(&now, NULL);
                 timersub(&now, &start, &delta);
-                if (timercmp(&delta, &wait, >))
+                if (timercmp(&delta, &wait, > /* For checkpatch */))
                   {
                     printf("Expire time is pasted. GoTo next state.\n");
                     if (app_state == APP_STATE_BEFORE_CAPTURE)

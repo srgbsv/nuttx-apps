@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/sched/cases/api_pthread_test_008.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdio.h>
 #include <syslog.h>
@@ -43,22 +44,22 @@
  * Private Data
  ****************************************************************************/
 
-static sem_t sched_task08_sem;
+static sem_t schedtask08_sem;
 
 /****************************************************************************
  * Private Functions
  ****************************************************************************/
 
 /****************************************************************************
- * Name: sched_pthread08_threadroutine
+ * Name: schedpthread08threadroutine
  ****************************************************************************/
 
-static void *sched_pthread08_threadroutine(void *arg)
+static void *schedpthread08threadroutine(void *arg)
 {
   int i;
   for (i = 0; i < 5; i++)
     {
-      sem_wait(&sched_task08_sem);
+      sem_wait(&schedtask08_sem);
       (*((int *)arg))++;
     }
 
@@ -79,25 +80,25 @@ void test_nuttx_sched_pthread08(FAR void **state)
   pthread_t pthread_id;
   int run_flag = 0;
 
-  res = sem_init(&sched_task08_sem, 0, 0);
+  res = sem_init(&schedtask08_sem, 0, 0);
   assert_int_equal(res, OK);
 
   /* create pthread */
 
   res = pthread_create(&pthread_id, NULL,
-                       (void *)sched_pthread08_threadroutine, &run_flag);
+                       (void *)schedpthread08threadroutine, &run_flag);
   assert_int_equal(res, OK);
 
   while (1)
     {
       sleep(2);
-      res = sem_post(&sched_task08_sem);
+      res = sem_post(&schedtask08_sem);
       assert_int_equal(res, OK);
       if (run_flag == 5)
         break;
     }
 
-  res = sem_destroy(&sched_task08_sem);
+  res = sem_destroy(&schedtask08_sem);
   assert_int_equal(res, OK);
   assert_int_equal(run_flag, 5);
 }

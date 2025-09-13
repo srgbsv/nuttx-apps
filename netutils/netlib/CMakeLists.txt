@@ -1,6 +1,8 @@
 # ##############################################################################
 # apps/netutils/netlib/CMakeLists.txt
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
 # additional information regarding copyright ownership.  The ASF licenses this
@@ -52,6 +54,9 @@ if(CONFIG_NETUTILS_NETLIB)
     endif()
     if(CONFIG_NET_IPTABLES)
       list(APPEND SRCS netlib_iptables.c)
+    endif()
+    if(CONFIG_NETUTILS_DHCPC)
+      list(APPEND SRCS netlib_obtainipv4addr.c)
     endif()
   endif()
 
@@ -118,6 +123,10 @@ if(CONFIG_NETUTILS_NETLIB)
   if(CONFIG_WIRELESS_IEEE802154)
     list(APPEND SRCS netlib_seteaddr.c netlib_getpanid.c netlib_saddrconv.c
          netlib_eaddrconv.c)
+  endif()
+
+  if(CONFIG_NETDEV_STATISTICS)
+    list(APPEND SRCS netlib_getifstatistics.c)
   endif()
 
   if(CONFIG_WIRELESS_PKTRADIO)

@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/pthread/cases/posix_pthread_test_004.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <sys/syscall.h>
 #include <unistd.h>
@@ -37,24 +38,24 @@
  * Public Functions
  ****************************************************************************/
 
-static void *thread_f01(void *arg)
+static void *threadf01(void *arg)
 {
   pthread_exit((void *)2); /* 2, here set value of the exit status. */
   return NULL;
 }
 
 /****************************************************************************
- * Name: TestNuttxPthreadTest04
+ * Name: test_nuttx_pthread_test04
  ****************************************************************************/
 
 void test_nuttx_pthread_test04(FAR void **state)
 {
-  pthread_t main_th;
-  pthread_t new_th;
+  pthread_t mainth;
+  pthread_t newth;
   UINT32 ret;
   UINTPTR temp;
 
-  if (pthread_create(&new_th, NULL, thread_f01, NULL) != 0)
+  if (pthread_create(&newth, NULL, threadf01, NULL) != 0)
     {
       printf("Error creating thread\n");
       assert_int_equal(1, 0);
@@ -62,17 +63,17 @@ void test_nuttx_pthread_test04(FAR void **state)
 
   usleep(1000);
 
-  /* LOS_TaskDelay(1);
-   * Obtain the thread ID of this main function
-   */
+  /* los_taskdelay(1); */
 
-  main_th = test_pthread_self();
+  /* Obtain the thread ID of this main function */
+
+  mainth = testpthreadself();
 
   /* Compare the thread ID of the new thread to the main thread.
    * They should be different.  If not, the test fails.
    */
 
-  if (pthread_equal(new_th, main_th) != 0)
+  if (pthread_equal(newth, mainth) != 0)
     {
       printf("Test FAILED: A new thread wasn't created\n");
       assert_int_equal(1, 0);
@@ -80,9 +81,9 @@ void test_nuttx_pthread_test04(FAR void **state)
 
   usleep(1000);
 
-  /* TestExtraTaskDelay(1); */
+  /* testextrataskdelay(1); */
 
-  ret = pthread_join(new_th, (void *)&temp);
+  ret = pthread_join(newth, (void *)&temp);
   syslog(LOG_INFO, "ret: %d \n", ret);
   syslog(LOG_INFO, "temp: %ld \n", temp);
   assert_int_equal(ret, 0);

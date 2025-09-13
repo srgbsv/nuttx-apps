@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/mm/tool/mem_batch_opt_perf_test.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -42,8 +43,9 @@
 
 static void show_usage(void)
 {
-  printf("\nUsage: mm_stress_test  <min_size> \
-         <max_size>  <list_length> <test_num>\n");
+  printf(
+      "\nUsage: mm_stress_test  <min_size>  <max_size>  <list_length> "
+      "<test_num>\n");
   printf("\nWhere:\n");
   printf("  <min_size>    Minimum number of memory requests.\n");
   printf("  <max_size>    Maximum number of memory requests.\n");
@@ -52,18 +54,16 @@ static void show_usage(void)
 }
 
 /****************************************************************************
- * Public Functions
- ****************************************************************************/
-
-/****************************************************************************
  * Name: main
  ****************************************************************************/
 
 int main(int argc, FAR char *argv[])
 {
   int malloc_size = 0;
-  int mallc_min_size; /* The minimum memory length requested in the test */
-  int mallc_max_size; /* The maximum memory length requested in the test */
+  int mallc_min_size; /* The minimum memory length requested in the test
+                       */
+  int mallc_max_size; /* The maximum memory length requested in the test
+                       */
   int list_length;
   int test_num = 1;
   struct timespec t_start;
@@ -96,29 +96,32 @@ int main(int argc, FAR char *argv[])
       for (int i = 0; i < list_length; i++)
         {
           srand(i + gettid());
-          malloc_size = mmtest_get_rand_size(mallc_min_size, mallc_max_size);
+          malloc_size =
+              mmtest_get_rand_size(mallc_min_size, mallc_max_size);
 
           clock_gettime(CLOCK_MONOTONIC, &t_start);
           address_ptr = (char *)malloc(malloc_size * sizeof(char));
           clock_gettime(CLOCK_MONOTONIC, &t_end);
-          timedif = 1000000 * (t_end.tv_sec - t_start.tv_sec)
-                     + (t_end.tv_nsec - t_start.tv_nsec) / 1000;
+          timedif = 1000000 * (t_end.tv_sec - t_start.tv_sec) +
+                    (t_end.tv_nsec - t_start.tv_nsec) / 1000;
           if (address_ptr != NULL)
             {
               syslog(LOG_INFO,
-                     "[Test %d Round] Allocate success -> mem_list[%d]"
-                     " (address:%p size:%d) takes:%ld microseconds\n",
-              n, i, address_ptr, malloc_size, timedif);
+                     "[Test %d Round] Allocate success -> mem_list[%d] "
+                     "(address:%p size:%d) takes:%ld microseconds\n",
+                     n, i, address_ptr, malloc_size, timedif);
               memset(address_ptr, 0x67, malloc_size);
 
               /* Add to list */
 
               mem_list[i] = address_ptr;
             }
+
           else
             {
               syslog(LOG_ERR,
-              "Malloc failed ! The remaining memory may be insufficient\n");
+                     "Malloc failed ! The remaining memory may be "
+                     "insufficient\n");
               syslog(LOG_ERR, "Continue to test !!\n");
 
               /* Memory allocation failure */
@@ -136,11 +139,11 @@ int main(int argc, FAR char *argv[])
               clock_gettime(CLOCK_MONOTONIC, &t_start);
               free(address_ptr);
               clock_gettime(CLOCK_MONOTONIC, &t_end);
-              timedif = 1000000 * (t_end.tv_sec - t_start.tv_sec)
-                        + (t_end.tv_nsec - t_start.tv_nsec) / 1000;
+              timedif = 1000000 * (t_end.tv_sec - t_start.tv_sec) +
+                        (t_end.tv_nsec - t_start.tv_nsec) / 1000;
               syslog(LOG_INFO,
-                     "[Test %d Round] Free -> mem_list[%d] (size:%d)"
-                     " takes:%ld microseconds\n",
+                     "[Test %d Round] Free -> mem_list[%d] (size:%d) "
+                     "takes:%ld microseconds\n",
                      n, k, malloc_size, timedif);
               mem_list[k] = NULL;
             }

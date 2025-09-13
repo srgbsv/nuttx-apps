@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/interpreters/toywasm/include/toywasm_config.h
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -32,6 +34,8 @@
 #define TOYWASM_USE_SMALL_CELLS
 #define TOYWASM_USE_RESULTTYPE_CELLIDX
 #define TOYWASM_USE_LOCALTYPE_CELLIDX
+#define TOYWASM_ENABLE_HEAP_TRACKING
+#define TOYWASM_ENABLE_HEAP_TRACKING_PEAK
 #define TOYWASM_ENABLE_WRITER
 #define TOYWASM_ENABLE_WASM_SIMD
 #define TOYWASM_ENABLE_WASM_EXCEPTION_HANDLING

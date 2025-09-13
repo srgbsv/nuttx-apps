@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/examples/usrsocktest/usrsocktest_multi_thread.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -144,7 +146,7 @@ TEST_SETUP(multithread)
 
 TEST_TEAR_DOWN(multithread)
 {
-  int ret;
+  int unused_data ret;
   int i;
 
   for (i = 0; i < nitems(tids); i++)

@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/ostest/ostest_main.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -313,6 +315,14 @@ static int user_main(int argc, char *argv[])
   check_test_memory_usage();
 #endif
 
+#ifdef CONFIG_SCHED_THREAD_LOCAL
+  /* Test __thread/thread_local keyword */
+
+  printf("\nuser_main: sched_thread_local test\n");
+  sched_thread_local_test();
+  check_test_memory_usage();
+#endif
+
   /* Top of test loop */
 
 #if CONFIG_TESTING_OSTEST_LOOPS > 1
@@ -346,7 +356,7 @@ static int user_main(int argc, char *argv[])
 #endif
 
 #if defined(CONFIG_ARCH_FPU) && !defined(CONFIG_TESTING_OSTEST_FPUTESTDISABLE) && \
-    !defined(CONFIG_BUILD_KERNEL)
+    defined(CONFIG_BUILD_FLAT)
       /* Check that the FPU is properly supported during context switching */
 
       printf("\nuser_main: FPU test\n");
@@ -370,8 +380,8 @@ static int user_main(int argc, char *argv[])
       check_test_memory_usage();
 #endif
 
-#if !defined(CONFIG_DISABLE_PTHREAD) && \
-    (defined(CONFIG_SCHED_LPWORK) || defined(CONFIG_SCHED_HPWORK))
+#if !defined(CONFIG_DISABLE_PTHREAD) && defined(__KERNEL__) && \
+    defined(CONFIG_SCHED_WORKQUEUE)
       /* Check work queues */
 
       printf("\nuser_main: wqueue test\n");
@@ -470,7 +480,7 @@ static int user_main(int argc, char *argv[])
       pthread_rwlock_cancel_test();
       check_test_memory_usage();
 
-#if CONFIG_PTHREAD_CLEANUP_STACKSIZE > 0
+#if CONFIG_TLS_NCLEANUP > 0
       /* Verify pthread cancellation cleanup handlers */
 
       printf("\nuser_main: pthread_cleanup test\n");
@@ -521,6 +531,12 @@ static int user_main(int argc, char *argv[])
     !defined(CONFIG_BUILD_KERNEL)
       printf("\nuser_main: signal action test\n");
       suspend_test();
+      check_test_memory_usage();
+#endif
+
+#ifdef CONFIG_BUILD_FLAT
+      printf("\nuser_main: wdog test\n");
+      wdog_test();
       check_test_memory_usage();
 #endif
 
@@ -592,21 +608,21 @@ static int user_main(int argc, char *argv[])
 
 #if defined(CONFIG_ARCH_HAVE_FORK) && defined(CONFIG_SCHED_WAITPID) && \
    !defined(CONFIG_ARCH_SIM)
-#ifndef CONFIG_BUILD_KERNEL
       printf("\nuser_main: vfork() test\n");
       vfork_test();
-#else
-      /* REVISIT: The issue with vfork() is on the kernel side, fix the issue
-       * and re-enable this test with CONFIG_BUILD_KERNEL
-       */
-
-      printf("\nuser_main: vfork() test DISABLED (CONFIG_BUILD_KERNEL)\n");
-#endif
 #endif
 
-#ifdef CONFIG_SMP_CALL
+#if defined(CONFIG_SMP) && defined(CONFIG_BUILD_FLAT)
       printf("\nuser_main: smp call test\n");
       smp_call_test();
+#endif
+
+#if defined(CONFIG_SCHED_EVENTS) && defined(CONFIG_BUILD_FLAT)
+      /* Verify nxevent */
+
+      printf("\nuser_main: nxevent test\n");
+      nxevent_test();
+      check_test_memory_usage();
 #endif
 
       /* Compare memory usage at time ostest_main started until

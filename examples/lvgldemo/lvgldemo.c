@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/examples/lvgldemo/lvgldemo.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -54,7 +56,7 @@
 #endif
 
 /****************************************************************************
- * Private Type Declarations
+ * Private Types
  ****************************************************************************/
 
 /****************************************************************************
@@ -111,7 +113,14 @@ int main(int argc, FAR char *argv[])
 
 #ifdef CONFIG_LV_USE_NUTTX_LIBUV
   uv_loop_t ui_loop;
+  lv_memzero(&ui_loop, sizeof(ui_loop));
 #endif
+
+  if (lv_is_initialized())
+    {
+      LV_LOG_ERROR("LVGL already initialized! aborting.");
+      return -1;
+    }
 
 #ifdef NEED_BOARDINIT
   /* Perform board-specific driver initialization */
@@ -126,6 +135,10 @@ int main(int argc, FAR char *argv[])
 
 #ifdef CONFIG_LV_USE_NUTTX_LCD
   info.fb_path = "/dev/lcd0";
+#endif
+
+#ifdef CONFIG_INPUT_TOUCHSCREEN
+  info.input_path = CONFIG_EXAMPLES_LVGLDEMO_INPUT_DEVPATH;
 #endif
 
   lv_nuttx_init(&info, &result);
@@ -161,7 +174,7 @@ int main(int argc, FAR char *argv[])
 #endif
 
 demo_end:
-  lv_disp_remove(result.disp);
+  lv_nuttx_deinit(&result);
   lv_deinit();
 
   return 0;

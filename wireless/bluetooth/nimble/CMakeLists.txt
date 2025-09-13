@@ -1,6 +1,8 @@
 # ##############################################################################
 # apps/wireless/bluetooth/nimble/CMakeLists.txt
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
 # additional information regarding copyright ownership.  The ASF licenses this
@@ -31,14 +33,6 @@ if(CONFIG_NIMBLE)
           ${CMAKE_CURRENT_LIST_DIR}/mynewt-nimble
           BINARY_DIR
           ${CMAKE_BINARY_DIR}/apps/wireless/bluetooth/nimble/mynewt-nimble
-          CONFIGURE_COMMAND
-          ""
-          BUILD_COMMAND
-          ""
-          INSTALL_COMMAND
-          ""
-          TEST_COMMAND
-          ""
       DOWNLOAD_NO_PROGRESS true
       TIMEOUT 30)
 
@@ -54,8 +48,14 @@ if(CONFIG_NIMBLE)
       mynewt-nimble/porting/nimble/src/mem.c
       mynewt-nimble/porting/nimble/src/nimble_port.c
       mynewt-nimble/porting/nimble/src/os_mbuf.c
-      mynewt-nimble/porting/nimble/src/os_mempool.c
-      mynewt-nimble/porting/nimble/src/os_msys_init.c)
+      mynewt-nimble/porting/nimble/src/os_mempool.c)
+
+  # os_msys_init.c is obsolete
+  if(EXISTS mynewt-nimble/porting/nimble/src/os_msys_init.c)
+    list(APPEND SRCS_PORTING mynewt-nimble/porting/nimble/src/os_msys_init.c)
+  else()
+    list(APPEND SRCS_PORTING mynewt-nimble/porting/nimble/src/os_msys.c)
+  endif()
 
   set(SRCS_NPL
       mynewt-nimble/porting/npl/nuttx/src/os_atomic.c

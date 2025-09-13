@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/pthread/cases/posix_pthread_test_009.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <sys/syscall.h>
 #include <unistd.h>
@@ -37,9 +38,9 @@
  * Public Functions
  ****************************************************************************/
 
-static void *pthread_f01(void *arg)
+static void *pthreadf01(void *arg)
 {
-  g_test_pthread_count++;
+  g_testpthreadcount++;
 
   pthread_exit(NULL);
 
@@ -47,31 +48,31 @@ static void *pthread_f01(void *arg)
 }
 
 /****************************************************************************
- * Name: TestNuttxPthreadTest09
+ * Name: test_nuttx_pthread_test09
  ****************************************************************************/
 
 void test_nuttx_pthread_test09(FAR void **state)
 {
-  pthread_t new_th;
+  pthread_t newth;
   UINT32 ret;
   UINTPTR temp = 1;
 
   /* _pthread_data *joinee = NULL; */
 
-  g_test_pthread_count = 0;
-  g_test_pthread_task_max_num = 128;
+  g_testpthreadcount = 0;
+  g_testpthreadtaskmaxnum = 128;
 
-  ret = pthread_create(&new_th, NULL, pthread_f01, NULL);
+  ret = pthread_create(&newth, NULL, pthreadf01, NULL);
   syslog(LOG_INFO, "ret: %d \n", ret);
   assert_int_equal(ret, 0);
   usleep(1000);
 
-  /* LOS_TaskDelay(1); */
+  /* los_taskdelay(1); */
 
-  syslog(LOG_INFO, "g_testPthreadCount: %d \n", g_test_pthread_count);
-  assert_int_equal(g_test_pthread_count, 1);
+  syslog(LOG_INFO, "g_testpthreadcount: %d \n", g_testpthreadcount);
+  assert_int_equal(g_testpthreadcount, 1);
 
-  ret = pthread_join(g_test_pthread_task_max_num, (void *)&temp);
+  ret = pthread_join(g_testpthreadtaskmaxnum, (void *)&temp);
   syslog(LOG_INFO, "ret: %d \n", ret);
   syslog(LOG_INFO, "temp: %ld \n", temp);
   assert_int_equal(ret, ESRCH);
@@ -83,20 +84,20 @@ void test_nuttx_pthread_test09(FAR void **state)
   syslog(LOG_INFO, "temp: %ld \n", temp);
   assert_int_equal(temp, 1);
 
-  ret = pthread_detach(g_test_pthread_task_max_num);
+  ret = pthread_detach(g_testpthreadtaskmaxnum);
   syslog(LOG_INFO, "ret: %d \n", ret);
   assert_int_equal(ret, ESRCH);
 
-  ret = pthread_join(new_th, NULL);
+  ret = pthread_join(newth, NULL);
   syslog(LOG_INFO, "ret: %d \n", ret);
   assert_int_equal(ret, 0);
 
   sleep(1);
-  ret = pthread_detach(new_th);
+  ret = pthread_detach(newth);
   syslog(LOG_INFO, "ret: %d \n", ret);
   assert_int_equal(ret, ESRCH);
 
-  ret = pthread_join(new_th, NULL);
+  ret = pthread_join(newth, NULL);
   syslog(LOG_INFO, "ret: %d \n", ret);
   assert_int_equal(ret, ESRCH);
 }

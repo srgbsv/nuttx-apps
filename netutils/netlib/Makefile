@@ -1,6 +1,8 @@
 ############################################################################
 # apps/netutils/netlib/Makefile
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.  The
@@ -53,6 +55,9 @@ endif
 ifeq ($(CONFIG_NET_IPTABLES),y)
 CSRCS += netlib_iptables.c
 endif
+ifeq ($(CONFIG_NETUTILS_DHCPC),y)
+CSRCS += netlib_obtainipv4addr.c
+endif
 endif
 
 ifeq ($(CONFIG_NET_IPv6),y)
@@ -86,6 +91,10 @@ CSRCS += netlib_getdevs.c
 ifeq ($(CONFIG_NET_ROUTE),y)
 CSRCS += netlib_getroute.c
 endif
+endif
+
+ifeq ($(CONFIG_NETDEV_STATISTICS),y)
+CSRCS += netlib_getifstatistics.c
 endif
 
 # Netfilter connection support

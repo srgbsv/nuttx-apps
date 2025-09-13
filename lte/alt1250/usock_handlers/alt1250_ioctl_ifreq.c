@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/lte/alt1250/usock_handlers/alt1250_ioctl_ifreq.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -399,14 +401,9 @@ int usockreq_ioctl_ifreq(FAR struct alt1250_s *dev,
     {
       ret = do_ifup(dev, req, usock_result, usock_xid, ackinfo);
     }
-  else if (if_req->ifr_flags & IFF_DOWN)
-    {
-      ret = do_ifdown(dev, req, usock_result, usock_xid, ackinfo);
-    }
   else
     {
-      dbg_alt1250("unexpected ifr_flags:0x%02x\n", if_req->ifr_flags);
-      *usock_result = -EINVAL;
+      ret = do_ifdown(dev, req, usock_result, usock_xid, ackinfo);
     }
 
   return ret;

@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/pthread/include/PthreadTest.h
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -18,13 +20,12 @@
  *
  ****************************************************************************/
 
-/****************************************************************************
- * Included Files
- ****************************************************************************/
-
 #ifndef PTHREAD_TEST_H
 #define PTHREAD_TEST_H
 
+/****************************************************************************
+ * Included Files
+ ****************************************************************************/
 #include <nuttx/config.h>
 #include <errno.h>
 #include <syslog.h>
@@ -59,7 +60,10 @@ typedef unsigned long UINTPTR;
 #define THREAD_NUM 3
 #define PTHREAD_TIMEOUT (THREAD_NUM * 2)
 #define PTHREAD_INTHREAD_TEST 0 /* Control going to or is already for Thread */
-#define PTHREAD_INMAIN_TEST 1   /* Control going to or is already for Main */
+
+/* Control going to or is already for Main */
+
+#define PTHREAD_INMAIN_TEST 1
 #define INVALID_PSHARED_VALUE (-100)
 #define NUM_OF_CONDATTR 10
 #define RUNTIME 5
@@ -75,52 +79,63 @@ typedef unsigned long UINTPTR;
 
 /* We are testing conformance to IEEE Std 1003.1, 2003 Edition */
 
+#ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 200112L
+#endif
+
 #define PRIORITY_OTHER (-1)
 #define PRIORITY_FIFO 20
 #define PRIORITY_RR 20
 #define LOSCFG_BASE_CORE_TSK_CONFIG 1024
 
-extern UINT32 g_test_pthread_count;
-extern UINT32 g_test_pthread_task_max_num;
+extern UINT32 g_testpthreadcount;
+extern UINT32 g_testpthreadtaskmaxnum;
 
 /****************************************************************************
  * Public Function Prototypes
  ****************************************************************************/
 
-pthread_t test_pthread_self(void);
+pthread_t testpthreadself(void);
 
 /* test case function */
 
-/* cases/posix_pthread_test_003.c *******************************************/
+/* cases/posix_pthread_test_003.c
+ * ************************************************/
 
 void test_nuttx_pthread_test03(FAR void **state);
 
-/* cases/posix_pthread_test_004.c *******************************************/
+/* cases/posix_pthread_test_004.c
+ * ************************************************/
 
 void test_nuttx_pthread_test04(FAR void **state);
 
-/* cases/posix_pthread_test_005.c *******************************************/
+/* cases/posix_pthread_test_005.c
+ * ************************************************/
 
 void test_nuttx_pthread_test05(FAR void **state);
 
-/* cases/posix_pthread_test_006.c *******************************************/
+/* cases/posix_pthread_test_006.c
+ * ************************************************/
 
 void test_nuttx_pthread_test06(FAR void **state);
 
-/* cases/posix_pthread_test_009.c *******************************************/
+/* cases/posix_pthread_test_009.c
+ * ************************************************/
 
 void test_nuttx_pthread_test09(FAR void **state);
 
-/* cases/posix_pthread_test_018.c *******************************************/
+/* cases/posix_pthread_test_018.c
+ * ************************************************/
 
 void test_nuttx_pthread_test18(FAR void **state);
 
-/* cases/posix_pthread_test_019.c *******************************************/
+/* cases/posix_pthread_test_019.c
+ * ************************************************/
 
 void test_nuttx_pthread_test19(FAR void **state);
 
-/* cases/posix_pthread_test_021.c *******************************************/
+/* cases/posix_pthread_test_021.c
+ * ************************************************/
 
 void test_nuttx_pthread_test21(FAR void **state);
 #endif

@@ -1,6 +1,8 @@
 # ##############################################################################
 # apps/netutils/cjson/CMakeLists.txt
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
 # additional information regarding copyright ownership.  The ASF licenses this
@@ -38,14 +40,6 @@ if(CONFIG_NETUTILS_CJSON)
           ${CMAKE_CURRENT_LIST_DIR}/cJSON
           BINARY_DIR
           ${CMAKE_BINARY_DIR}/apps/netutils/cjson/cJSON
-          CONFIGURE_COMMAND
-          ""
-          BUILD_COMMAND
-          ""
-          INSTALL_COMMAND
-          ""
-          TEST_COMMAND
-          ""
       DOWNLOAD_NO_PROGRESS true
       TIMEOUT 30)
 

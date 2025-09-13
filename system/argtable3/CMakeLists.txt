@@ -1,6 +1,8 @@
 # ##############################################################################
 # apps/system/argtable3/CMakeLists.txt
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
 # additional information regarding copyright ownership.  The ASF licenses this
@@ -41,14 +43,6 @@ if(CONFIG_SYSTEM_ARGTABLE3)
           ${CMAKE_CURRENT_LIST_DIR}/argtable3
           BINARY_DIR
           ${CMAKE_BINARY_DIR}/apps/system/argtable3/argtable3
-          CONFIGURE_COMMAND
-          ""
-          BUILD_COMMAND
-          ""
-          INSTALL_COMMAND
-          ""
-          TEST_COMMAND
-          ""
       DOWNLOAD_NO_PROGRESS true
       TIMEOUT 30)
 
@@ -81,10 +75,11 @@ if(CONFIG_SYSTEM_ARGTABLE3)
 
   target_sources(argtable3 PRIVATE ${SRCS})
 
-  if(NOT EXISTS ${CMAKE_BINARY_DIR}/apps/include/argtable3.h)
-    file(CREATE_LINK ${CMAKE_CURRENT_LIST_DIR}/argtable3/src/argtable3.h
-         ${CMAKE_BINARY_DIR}/apps/include/argtable3.h SYMBOLIC)
-  endif()
+  set_property(
+    TARGET nuttx
+    APPEND
+    PROPERTY NUTTX_INCLUDE_DIRECTORIES
+             ${NUTTX_APPS_DIR}/system/argtable3/argtable3/src)
 
   target_compile_options(argtable3 PRIVATE -DARG_REPLACE_GETOPT=0)
 

@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/examples/nxscope/nxscope_main.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -53,7 +55,7 @@
 #define SIN_DT (0.01f)
 
 /****************************************************************************
- * Private Type Definition
+ * Private Types
  ****************************************************************************/
 
 struct nxscope_thr_env_s

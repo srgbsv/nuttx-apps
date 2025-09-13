@@ -1,6 +1,8 @@
 #############################################################################
 # apps/netutils/cjson/Makefile
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.  The
@@ -74,6 +76,7 @@ MAINSRC += $(UNITY_CJSONTESTCS)
 
 CSRCS += $(CJSON_SRCDIR)/tests/unity_setup.c
 CFLAGS += -Wno-unused-function
+CFLAGS += -DCJSON_NESTING_LIMIT=CONFIG_CJSON_NESTING_LIMIT
 
 PRIORITY  = $(CONFIG_CJSON_TEST_PRIORITY)
 STACKSIZE = $(CONFIG_CJSON_TEST_STACKSIZE)

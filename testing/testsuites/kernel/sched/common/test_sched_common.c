@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/sched/common/test_sched_common.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -37,10 +38,10 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Name: test_nuttx_schedtest_group_setup
+ * Name: test_nuttx_sched_test_group_setup
  ****************************************************************************/
 
-int test_nuttx_schedtest_group_setup(void **state)
+int test_nuttx_sched_test_group_setup(void **state)
 {
   /* syslog(LOG_INFO, "This is goup setup !\n"); */
 
@@ -48,10 +49,10 @@ int test_nuttx_schedtest_group_setup(void **state)
 }
 
 /****************************************************************************
- * Name: test_nuttx_schedtest_group_teardown
+ * Name: test_nuttx_sched_test_group_teardown
  ****************************************************************************/
 
-int test_nuttx_schedtest_group_teardown(void **state)
+int test_nuttx_sched_test_group_teardown(void **state)
 {
   /* syslog(LOG_INFO, "This is goup tearDown !\n"); */
 

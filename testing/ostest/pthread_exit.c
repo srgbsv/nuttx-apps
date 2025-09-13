@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/ostest/pthread_exit.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -25,6 +27,7 @@
 #include <nuttx/config.h>
 #include <sys/wait.h>
 #include <stdio.h>
+#include <sched.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>

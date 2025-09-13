@@ -1,17 +1,11 @@
 /****************************************************************************
  * apps/include/netutils/netlib.h
- * Various non-standard APIs to support netutils.  All non-standard and
- * intended only for internal use.
  *
- *   Copyright (C) 2007, 2009, 2011, 2015, 2017 Gregory Nutt. All rights
- *   reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
- *
- * Some of these APIs derive from uIP.  uIP also has a BSD style license:
- *
- *   Author: Adam Dunkels <adam@sics.se>
- *   Copyright (c) 2002, Adam Dunkels.
- *   All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * SPDX-FileCopyrightText: 2007, 2009, 2011, 2015, 2017 Gregory Nutt.
+ * SPDX-FileCopyrightText: 2002 Adam Dunkels.
+ * SPDX-FileContributor: Gregory Nutt <gnutt@nuttx.org>
+ * SPDX-FileContributor: Adam Dunkels <adam@sics.se>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -58,6 +52,7 @@
 
 #include <net/if.h>
 #include <netinet/in.h>
+#include <nuttx/net/netdev.h>
 #include <nuttx/net/netconfig.h>
 
 /****************************************************************************
@@ -375,6 +370,12 @@ ssize_t netlib_get_route(FAR struct rtentry *rtelist,
                          unsigned int nentries, sa_family_t family);
 #endif
 
+#if defined(CONFIG_NET_IPv4) && defined(CONFIG_NETUTILS_DHCPC)
+/* DHCP */
+
+int netlib_obtain_ipv4addr(FAR const char *ifname);
+#endif
+
 #ifdef CONFIG_NET_ICMPv6_AUTOCONF
 /* ICMPv6 Autoconfiguration */
 
@@ -488,6 +489,11 @@ int netlib_set_ipv6dnsaddr(FAR const struct in6_addr *inaddr);
 #endif
 
 int netlib_set_mtu(FAR const char *ifname, int mtu);
+
+#if defined(CONFIG_NETDEV_STATISTICS)
+int netlib_getifstatistics(FAR const char *ifname,
+                           FAR struct netdev_statistics_s *stat);
+#endif
 
 #undef EXTERN
 #ifdef __cplusplus

@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/mm/cases/mm_test_003.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdlib.h>
 #include <syslog.h>
@@ -38,7 +39,7 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Name: TestNuttxMm03
+ * Name: test_nuttx_mm03
  ****************************************************************************/
 
 void test_nuttx_mm03(FAR void **state)

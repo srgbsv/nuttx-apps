@@ -1,6 +1,8 @@
 # ##############################################################################
 # apps/crypto/libsodium/CMakeLists.txt
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
 # additional information regarding copyright ownership.  The ASF licenses this
@@ -52,8 +54,14 @@ if(CONFIG_LIBSODIUM)
   # Flags
   # ############################################################################
 
-  set(CFLAGS -Wno-unused-function -Wno-undef -Wno-unused-variable
-             -Wno-deprecated-declarations -Wno-shadow)
+  set(CFLAGS
+      -DDEV_MODE
+      -DCONFIGURED=1
+      -Wno-unused-function
+      -Wno-undef
+      -Wno-unused-variable
+      -Wno-deprecated-declarations
+      -Wno-shadow)
 
   # ############################################################################
   # Sources

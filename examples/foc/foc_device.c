@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/examples/foc/foc_device.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -207,6 +209,12 @@ int foc_dev_params_set(FAR struct foc_device_s *dev)
 
 #ifdef CONFIG_EXAMPLES_FOC_PERF
   foc_perf_end(&dev->perf);
+#endif
+
+#ifdef CONFIG_EXAMPLES_FOC_PERF_LIVE
+  /* Print perf live stats */
+
+  foc_perf_live(&dev->perf);
 #endif
 
 errout:

@@ -1,6 +1,8 @@
 ############################################################################
 # apps/system/adb/Makefile
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.  The
@@ -59,6 +61,10 @@ endif
 
 ifeq ($(CONFIG_ADBD_USB_SERVER),y)
 CSRCS += $(ADB_UNPACKNAME)/hal/hal_uv_client_usb.c
+endif
+
+ifeq ($(CONFIG_ADBD_QEMU_SERVER),y)
+CSRCS += $(ADB_UNPACKNAME)/hal/hal_uv_client_qemu.c
 endif
 
 ifeq ($(CONFIG_ADBD_AUTHENTICATION),y)

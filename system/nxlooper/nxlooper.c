@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/system/nxlooper/nxlooper.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -575,7 +577,7 @@ static void *nxlooper_loopthread(pthread_addr_t pvarg)
 
             if (ret == OK && plooper->loopstate == NXLOOPER_STATE_RECORDING)
               {
-#ifdef CONFIG_O_MULTI_SESSION
+#ifdef CONFIG_AUDIO_MULTI_SESSION
                 ret = ioctl(plooper->playdev_fd, AUDIOIOC_START,
                             (unsigned long)plooper->pplayses);
 #else

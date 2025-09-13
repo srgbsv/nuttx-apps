@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/sched/cases/api_task_test_001.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdio.h>
 #include <syslog.h>
@@ -47,10 +48,10 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Name: sched_task01_routine
+ * Name: schedtask01routine
  ****************************************************************************/
 
-static int sched_task01_routine(int argc, char *argv[])
+static int schedtask01routine(int argc, char *argv[])
 {
   char *str = NULL;
   str = (char *)malloc(sizeof(char) * 1024);
@@ -73,8 +74,8 @@ void test_nuttx_sched_task01(FAR void **state)
   pid_t pid;
   int status;
 
-  pid = task_create("sched_task01_routine", TASK_PRIORITY,
-                    DEFAULT_STACKSIZE, sched_task01_routine, NULL);
+  pid = task_create("schedtask01routine", TASK_PRIORITY,
+                    DEFAULT_STACKSIZE, schedtask01routine, NULL);
   assert_true(pid > 0);
   waitpid(pid, &status, 0);
 }

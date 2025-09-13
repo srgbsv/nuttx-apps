@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/sched/cases/api_pthread_test_005.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdio.h>
 #include <syslog.h>
@@ -44,10 +45,10 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Name: sched_pthread05_threadroutine
+ * Name: schedpthread05threadroutine
  ****************************************************************************/
 
-static void *sched_pthread05_threadroutine(void *arg)
+static void *schedpthread05threadroutine(void *arg)
 {
   int i;
   for (i = 0; i <= 5; i++)
@@ -76,7 +77,7 @@ void test_nuttx_sched_pthread05(FAR void **state)
 
   /* create thread */
 
-  res = pthread_create(&p_t, NULL, sched_pthread05_threadroutine, NULL);
+  res = pthread_create(&p_t, NULL, schedpthread05threadroutine, NULL);
 
   assert_int_equal(res, 0);
 

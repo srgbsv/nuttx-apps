@@ -1,6 +1,8 @@
 # ##############################################################################
 # apps/examples/bmi160/CMakeLists.txt
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
 # additional information regarding copyright ownership.  The ASF licenses this
@@ -19,6 +21,11 @@
 # ##############################################################################
 
 if(CONFIG_EXAMPLES_SIXAXIS)
+  if(CONFIG_EXAMPLES_SIXAXIS_UORB)
+    set(CSRC sixaxis_main.c)
+  else()
+    set(CSRC sixaxis_uorb_main.c)
+  endif()
   nuttx_add_application(
     NAME
     ${CONFIG_EXAMPLES_SIXAXIS_PROGNAME}
@@ -27,5 +34,5 @@ if(CONFIG_EXAMPLES_SIXAXIS)
     STACKSIZE
     ${CONFIG_EXAMPLES_SIXAXIS_STACKSIZE}
     SRCS
-    sixaxis_main.c)
+    ${CSRC})
 endif()

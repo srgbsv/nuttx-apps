@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/pthread/common/test_pthread_common.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -38,9 +39,8 @@
 #include <stdlib.h>
 #include "PthreadTest.h"
 
-UINT32 g_test_pthread_count;
-UINT32 g_test_pthread_task_max_num = 128;
-
+UINT32 g_testpthreadcount;
+UINT32 g_testpthreadtaskmaxnum = 128;
 /****************************************************************************
  * Private Functions
  ****************************************************************************/
@@ -50,10 +50,10 @@ UINT32 g_test_pthread_task_max_num = 128;
  ****************************************************************************/
 
 /****************************************************************************
- * Name: TestPthreadSelf
+ * Name: testpthreadself
  ****************************************************************************/
 
-pthread_t test_pthread_self(void)
+pthread_t testpthreadself(void)
 {
   pthread_t tid = pthread_self();
   return tid;

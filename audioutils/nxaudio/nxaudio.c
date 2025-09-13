@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/audioutils/nxaudio/nxaudio.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -282,11 +284,11 @@ int nxaudio_stop(FAR struct nxaudio_s *nxaudio)
 {
   struct audio_msg_s term_msg;
 
-  ioctl(nxaudio->fd, AUDIOIOC_STOP, 0);
-
   term_msg.msg_id = AUDIO_MSG_STOP;
   term_msg.u.data = 0;
   mq_send(nxaudio->mq, (FAR const char *)&term_msg, sizeof(term_msg), 0);
+
+  ioctl(nxaudio->fd, AUDIOIOC_STOP, 0);
 
   return OK;
 }

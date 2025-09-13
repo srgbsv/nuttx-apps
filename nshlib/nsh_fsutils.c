@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/nshlib/nsh_fsutils.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -36,6 +38,8 @@
 #include <assert.h>
 #include <unistd.h>
 
+#include <nuttx/lib/lib.h>
+
 #include "nsh.h"
 #include "nsh_console.h"
 
@@ -63,13 +67,13 @@ struct getpid_arg_s
  *
  ****************************************************************************/
 
-#if defined(CONFIG_FS_PROCFS) && !defined(CONFIG_NSH_DISABLE_PIDOF)
+#ifdef CONFIG_FS_PROCFS
 static int getpid_callback(FAR struct nsh_vtbl_s *vtbl,
                            FAR const char *dirpath,
                            FAR struct dirent *entryp, FAR void *pvarg)
 {
   FAR struct getpid_arg_s *arg = (FAR struct getpid_arg_s *)pvarg;
-  char buffer[PATH_MAX];
+  FAR char *buffer;
   int fd;
   int len;
 
@@ -78,20 +82,27 @@ static int getpid_callback(FAR struct nsh_vtbl_s *vtbl,
       return -E2BIG;
     }
 
+  buffer = lib_get_pathbuffer();
+  if (buffer == NULL)
+    {
+      return -errno;
+    }
+
   /* Match the name of the process */
 
-  snprintf(buffer, sizeof(buffer), "%s/%s/cmdline", dirpath, entryp->d_name);
-
-  fd = open(buffer, O_RDONLY);
+  snprintf(buffer, PATH_MAX, "%s/%s/cmdline", dirpath, entryp->d_name);
+  fd = open(buffer, O_RDONLY | O_CLOEXEC);
   if (fd < 0)
     {
+      lib_put_pathbuffer(buffer);
       return 0;
     }
 
-  len = read(fd, buffer, sizeof(buffer) - 1);
+  len = read(fd, buffer, PATH_MAX - 1);
   close(fd);
   if (len < 0)
     {
+      lib_put_pathbuffer(buffer);
       return -errno;
     }
 
@@ -103,6 +114,7 @@ static int getpid_callback(FAR struct nsh_vtbl_s *vtbl,
         arg->pids[arg->next++] = atoi(entryp->d_name);
     }
 
+  lib_put_pathbuffer(buffer);
   return OK;
 }
 #endif
@@ -137,7 +149,7 @@ int nsh_catfile(FAR struct nsh_vtbl_s *vtbl, FAR const char *cmd,
 
   /* Open the file for reading */
 
-  fd = open(filepath, O_RDONLY);
+  fd = open(filepath, O_RDONLY | O_CLOEXEC);
   if (fd < 0)
     {
 #if defined(CONFIG_NSH_PROC_MOUNTPOINT)
@@ -282,7 +294,7 @@ int nsh_readfile(FAR struct nsh_vtbl_s *vtbl, FAR const char *cmd,
 
   /* Open the file */
 
-  fd = open(filepath, O_RDONLY);
+  fd = open(filepath, O_RDONLY | O_CLOEXEC);
   if (fd < 0)
     {
       nsh_error(vtbl, g_fmtcmdfailed, cmd, "open", NSH_ERRNO);
@@ -381,7 +393,7 @@ int nsh_writefile(FAR struct nsh_vtbl_s *vtbl, FAR const char *cmd,
 
   /* Open the file for reading */
 
-  fd = open(filepath, O_WRONLY);
+  fd = open(filepath, O_WRONLY | O_CLOEXEC);
   if (fd < 0)
     {
 #if defined(CONFIG_NSH_PROC_MOUNTPOINT)
@@ -583,7 +595,7 @@ FAR char *nsh_getdirpath(FAR struct nsh_vtbl_s *vtbl,
       snprintf(vtbl->iobuffer, IOBUFFERSIZE, "%s/%s", dirpath, path);
     }
 
-  return strdup(vtbl->iobuffer);
+  return lib_realpath(vtbl->iobuffer, NULL, true);
 }
 #endif
 
@@ -604,7 +616,7 @@ FAR char *nsh_getdirpath(FAR struct nsh_vtbl_s *vtbl,
  *
  ****************************************************************************/
 
-#if defined(CONFIG_FS_PROCFS) && !defined(CONFIG_NSH_DISABLE_PIDOF)
+#ifdef CONFIG_FS_PROCFS
 ssize_t nsh_getpid(FAR struct nsh_vtbl_s *vtbl, FAR const char *name,
                    FAR pid_t *pids, size_t count)
 {

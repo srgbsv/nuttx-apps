@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/examples/usrsocktest/usrsocktest_chardev.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -97,7 +99,7 @@ TEST_SETUP(char_dev)
 
 TEST_TEAR_DOWN(char_dev)
 {
-  int ret;
+  int unused_data ret;
 
   if (us_fd >= 0)
     {

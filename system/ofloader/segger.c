@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/system/ofloader/segger.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -39,7 +41,7 @@
 #define ALGO_VERSION 0x101   /* Algo version, must not be modified. */
 
 /****************************************************************************
- * Private Type Definitions
+ * Private Typess
  ****************************************************************************/
 
 struct SECTOR_INFO

@@ -1,6 +1,8 @@
 # ##############################################################################
 # apps/system/ymodem/CMakeLists.txt
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
 # additional information regarding copyright ownership.  The ASF licenses this
@@ -19,8 +21,7 @@
 # ##############################################################################
 
 if(CONFIG_SYSTEM_YMODEM)
-  set(CSRCS ymodem.c)
-
+  target_sources(apps PRIVATE ymodem.c)
   nuttx_add_application(
     MODULE
     ${CONFIG_SYSTEM_YMODEM}
@@ -31,8 +32,7 @@ if(CONFIG_SYSTEM_YMODEM)
     PRIORITY
     ${CONFIG_SYSTEM_YMODEM_PRIORITY}
     SRCS
-    sb_main.c
-    ${CSRCS})
+    sb_main.c)
 
   nuttx_add_application(
     MODULE
@@ -44,6 +44,6 @@ if(CONFIG_SYSTEM_YMODEM)
     PRIORITY
     ${CONFIG_SYSTEM_YMODEM_PRIORITY}
     SRCS
-    rb_main.c
-    ${CSRCS})
+    rb_main.c)
+
 endif()

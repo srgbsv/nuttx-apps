@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/mm/cases/mm_test_006.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdlib.h>
 #include <syslog.h>
@@ -52,7 +53,7 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Name: TestNuttxMm06
+ * Name: test_nuttx_mm06
  ****************************************************************************/
 
 void test_nuttx_mm06(FAR void **state)
@@ -68,7 +69,8 @@ void test_nuttx_mm06(FAR void **state)
 
       /* Produces a random size */
 
-      malloc_size = mmtest_get_rand_size(MALLOC_MIN_SIZE, MALLOC_MAX_SIZE);
+      malloc_size =
+          mmtest_get_rand_size(MALLOC_MIN_SIZE, MALLOC_MAX_SIZE);
       address_ptr = (char *)malloc(malloc_size * sizeof(char));
       assert_non_null(address_ptr);
       memset(address_ptr, check_character, malloc_size);

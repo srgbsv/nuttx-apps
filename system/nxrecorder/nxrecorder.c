@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/system/nxrecorder/nxrecorder.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -61,7 +63,7 @@
 #endif
 
 /****************************************************************************
- * Private Type Declarations
+ * Private Types
  ****************************************************************************/
 
 #ifdef CONFIG_NXRECORDER_FMT_FROM_EXT
@@ -110,7 +112,12 @@ static const struct nxrecorder_ext_fmt_s g_known_ext[] =
 #ifdef CONFIG_AUDIO_FORMAT_OGG_VORBIS
   { "ogg",      AUDIO_FMT_OGG_VORBIS, NULL },
 #endif
-  { "amr",      AUDIO_FMT_AMR, NULL }
+#ifdef CONFIG_AUDIO_FORMAT_AMR
+  { "amr",      AUDIO_FMT_AMR, NULL },
+#endif
+#ifdef CONFIG_AUDIO_FORMAT_OPUS
+  { "opus",     AUDIO_FMT_OPUS, NULL }
+#endif
 };
 
 static const int g_known_ext_count = sizeof(g_known_ext) /
@@ -126,6 +133,16 @@ static const struct nxrecorder_enc_ops_s g_enc_ops[] =
   },
   {
     AUDIO_FMT_PCM,
+    NULL,
+    nxrecorder_write_common,
+  },
+  {
+    AUDIO_FMT_MP3,
+    NULL,
+    nxrecorder_write_common,
+  },
+  {
+    AUDIO_FMT_OPUS,
     NULL,
     nxrecorder_write_common,
   }
@@ -186,12 +203,32 @@ static int nxrecorder_opendevice(FAR struct nxrecorder_s *precorder,
       if (ioctl(precorder->dev_fd, AUDIOIOC_GETCAPS,
                 (uintptr_t)&cap) == cap.ac_len)
         {
-          if (((cap.ac_format.hw & (1 << (format - 1))) != 0) &&
+          if (((cap.ac_format.hw & (1 << (format - 1))) ||
+               (cap.ac_format.hw & (1 << (AUDIO_FMT_OTHER - 1)))) &&
               (cap.ac_controls.b[0] & AUDIO_TYPE_INPUT))
             {
+              if (!(cap.ac_format.hw & (1 << (format - 1))))
+                {
+                  /* Get the format supported by the driver
+                   * through cap.ac_controls.w
+                   */
+
+                  cap.ac_len     = sizeof(cap);
+                  cap.ac_type    = AUDIO_TYPE_QUERY;
+                  cap.ac_subtype = AUDIO_FMT_OTHER;
+                  if (ioctl(precorder->dev_fd, AUDIOIOC_GETCAPS,
+                            (uintptr_t)&cap) == cap.ac_len)
+                    {
+                      if (!(cap.ac_controls.w & (1 << (format - 1))))
+                        {
+                          supported = false;
+                        }
+                    }
+                }
+
               /* Test if subformat needed and detected */
 
-              if (subfmt != AUDIO_FMT_UNDEF)
+              if (subfmt != AUDIO_FMT_UNDEF && supported)
                 {
                   /* Prepare to get sub-formats for
                    * this main format
@@ -491,7 +528,6 @@ static FAR void *nxrecorder_recordthread(pthread_addr_t pvarg)
   bool                    streaming = true;
   bool                    failed = false;
   struct ap_buffer_info_s buf_info;
-  FAR struct ap_buffer_s  **pbuffers;
   unsigned int            prio;
 #ifdef CONFIG_DEBUG_FEATURES
   int                     outstanding = 0;
@@ -514,23 +550,11 @@ static FAR void *nxrecorder_recordthread(pthread_addr_t pvarg)
 
   /* Create array of pointers to buffers */
 
-  pbuffers = (FAR struct ap_buffer_s **) malloc(buf_info.nbuffers *
-                                                sizeof(FAR void *));
-  if (pbuffers == NULL)
-    {
-      /* Error allocating memory for buffer storage! */
-
-      ret = -ENOMEM;
-      running = false;
-      goto err_out;
-    }
+  FAR struct ap_buffer_s *pbuffers[buf_info.nbuffers];
 
   /* Create our audio pipeline buffers to use for queueing up data */
 
-  for (x = 0; x < buf_info.nbuffers; x++)
-    {
-      pbuffers[x] = NULL;
-    }
+  memset(pbuffers, 0, sizeof(pbuffers));
 
   for (x = 0; x < buf_info.nbuffers; x++)
     {
@@ -783,28 +807,20 @@ static FAR void *nxrecorder_recordthread(pthread_addr_t pvarg)
 err_out:
   audinfo("Clean-up and exit\n");
 
-  if (pbuffers != NULL)
+  audinfo("Freeing buffers\n");
+  for (x = 0; x < buf_info.nbuffers; x++)
     {
-      audinfo("Freeing buffers\n");
-      for (x = 0; x < buf_info.nbuffers; x++)
+      /* Fill in the buffer descriptor struct to issue a free request */
+
+      if (pbuffers[x] != NULL)
         {
-          /* Fill in the buffer descriptor struct to issue a free request */
-
-          if (pbuffers[x] != NULL)
-            {
 #ifdef CONFIG_AUDIO_MULTI_SESSION
-              buf_desc.session = precorder->session;
+         buf_desc.session = precorder->session;
 #endif
-              buf_desc.u.buffer = pbuffers[x];
-              ioctl(precorder->dev_fd,
-                    AUDIOIOC_FREEBUFFER,
-                    (uintptr_t)&buf_desc);
-            }
+          buf_desc.u.buffer = pbuffers[x];
+          ioctl(precorder->dev_fd, AUDIOIOC_FREEBUFFER,
+                (uintptr_t)&buf_desc);
         }
-
-      /* Free the pointers to the buffers */
-
-      free(pbuffers);
     }
 
   /* Unregister the message queue and release the session */
@@ -1097,6 +1113,7 @@ int nxrecorder_recordinternal(FAR struct nxrecorder_s *precorder,
 
   if (!precorder->ops)
     {
+      ret = -ENOSYS;
       goto err_out;
     }
 
@@ -1284,6 +1301,7 @@ FAR struct nxrecorder_s *nxrecorder_create(void)
   precorder->mq = 0;
   precorder->record_id = 0;
   precorder->crefs = 1;
+  precorder->ops = NULL;
 
 #ifdef CONFIG_AUDIO_MULTI_SESSION
   precorder->session = NULL;

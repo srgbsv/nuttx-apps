@@ -1,24 +1,28 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/fs/cases/fs_stream_test.c
- * Copyright (C) 2020 Xiaomi Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * SPDX-License-Identifier: Apache-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ ****************************************************************************/
 
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -26,7 +30,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include <fcntl.h>
 #include <syslog.h>
 #include <stdint.h>
 #include <stdarg.h>
@@ -38,10 +41,6 @@
 #define TESTFILENAME "streamTestfile"
 
 /****************************************************************************
- * Public Functions
- ****************************************************************************/
-
-/****************************************************************************
  * Name: stream
  * Example description:
  *   1. open a file with "a+".
@@ -50,6 +49,10 @@
  *   4. Check the returned results.
  * Test item: fopen() fwrite() freopen()
  * Expect results: TEST PASSED
+ ****************************************************************************/
+
+/****************************************************************************
+ * Public Functions
  ****************************************************************************/
 
 void test_nuttx_fs_stream01(FAR void **state)
@@ -100,9 +103,9 @@ void test_nuttx_fs_stream01(FAR void **state)
  * Name: stream
  * Example description:
  *   1. open a file with "a+".
- *   2. Write the file multiple times.
- *   3. Check that the file pointer is in the correct
- *      position after each write.
+ *    2. Write the file multiple times.
+ *    3. Check that the file pointer is in the correct position after
+ *each write.
  *   4. Reset the file pointer position. Repeat step 2-3
  *   4. Check the returned results.
  * Test item: fopen() fwrite() rewind() ftell() fseek() fgets()
@@ -127,7 +130,8 @@ void test_nuttx_fs_stream02(FAR void **state)
       pos = ftell(stream);
       if (pos != 0)
         {
-          syslog(LOG_ERR, "file pointer descrepancy 1, errno %d\n", errno);
+          syslog(LOG_ERR, "file pointer descrepancy 1, errno %d\n",
+                 errno);
           fclose(stream);
           assert_true(1 == 0);
         }
@@ -142,13 +146,15 @@ void test_nuttx_fs_stream02(FAR void **state)
       pos = ftell(stream);
       if (pos != strlen(junk))
         {
-          syslog(LOG_ERR,
-                 "strlen(junk)=%zi: file pointer descrepancy 2 (pos=%li)",
-                 strlen(junk), pos);
+          syslog(
+              LOG_ERR,
+              "strlen(junk)=%zi: file pointer descrepancy 2 (pos=%li)",
+              strlen(junk), pos);
           fclose(stream);
           assert_true(1 == 0);
         }
 
+      usleep(1000);
       rewind(stream);
       pos = ftell(stream);
       if (pos != 0)
@@ -171,9 +177,10 @@ void test_nuttx_fs_stream02(FAR void **state)
       if (pos != strlen(junk))
         {
           fclose(stream);
-          syslog(LOG_ERR,
-                 "strlen(junk)=%zi: file pointer descrepancy 4 (pos=%li)",
-                 strlen(junk), pos);
+          syslog(
+              LOG_ERR,
+              "strlen(junk)=%zi: file pointer descrepancy 4 (pos=%li)",
+              strlen(junk), pos);
           assert_true(1 == 0);
         }
 
@@ -188,9 +195,10 @@ void test_nuttx_fs_stream02(FAR void **state)
       if (pos != strlen(junk))
         {
           fclose(stream);
-          syslog(LOG_ERR,
-                 "strlen(junk)=%zi: file pointer descrepancy 5 (pos=%li)",
-                 strlen(junk), pos);
+          syslog(
+              LOG_ERR,
+              "strlen(junk)=%zi: file pointer descrepancy 5 (pos=%li)",
+              strlen(junk), pos);
           assert_true(1 == 0);
         }
 
@@ -206,7 +214,8 @@ void test_nuttx_fs_stream02(FAR void **state)
         {
           fclose(stream);
           syslog(LOG_ERR,
-                 "file pointer descrepancy 6 (pos=%li, wanted pos=0)", pos);
+                 "file pointer descrepancy 6 (pos=%li, wanted pos=0)",
+                 pos);
           assert_true(1 == 0);
         }
 
@@ -215,28 +224,30 @@ void test_nuttx_fs_stream02(FAR void **state)
       pos = ftell(stream);
       if (pos != strlen(junk))
         {
-          syslog(LOG_ERR,
-                 "strlen(junk)=%zi: file pointer descrepancy 7 (pos=%li)",
-                 strlen(junk), pos);
+          syslog(
+              LOG_ERR,
+              "strlen(junk)=%zi: file pointer descrepancy 7 (pos=%li)",
+              strlen(junk), pos);
           assert_true(1 == 0);
         }
 
       fclose(stream);
       unlink(TESTFILENAME);
+      usleep(40000);
     }
 }
 
 /****************************************************************************
  * Name: stream
  * Example description:
- *  1. open a file with "a+".
- *  2. Write the file multiple times.
- *  3. close the file.
- *  4. open the file again with "r+"
- *  5. Request a piece of memory and read the contents of the file.
- *  6. Check that the read file class is correct.
- *  7. repeat step 2-3-4-5-6 for 10 times.
- *  8. Check that the test returns results.
+ *   1. open a file with "a+".
+ *   2. Write the file multiple times.
+ *   3. close the file.
+ *   4. open the file again with "r+"
+ *   5. Request a piece of memory and read the contents of the file.
+ *   6. Check that the read file class is correct.
+ *   7. repeat step 2-3-4-5-6 for 10 times.
+ *   8. Check that the test returns results.
  * Test item: fopen() fwrite() fread() malloc()
  * Expect results: TEST PASSED
  ****************************************************************************/
@@ -247,7 +258,7 @@ void test_nuttx_fs_stream03(FAR void **state)
   char *junk = "abcdefghijklmnopqrstuvwxyz";
   size_t len = strlen(junk);
   char *inbuf = NULL;
-  int ret;
+  ssize_t ret;
   int lc;
   for (lc = 0; lc < 10; lc++)
     {
@@ -264,10 +275,9 @@ void test_nuttx_fs_stream03(FAR void **state)
           assert_true(1 == 0);
         }
 
-      if ((size_t)ret != len)
+      if (ret != len)
         {
-          syslog(LOG_ERR,
-                 "len = %zi != return value from fwrite = %i",
+          syslog(LOG_ERR, "len = %zu != return value from fwrite = %zd",
                  len, ret);
           fclose(stream);
           assert_true(1 == 0);
@@ -297,10 +307,9 @@ void test_nuttx_fs_stream03(FAR void **state)
           assert_true(1 == 0);
         }
 
-      if ((size_t)ret != len)
+      if (ret != len)
         {
-          syslog(LOG_ERR,
-                 "len = %zi != return value from fread = %i",
+          syslog(LOG_ERR, "len = %zu != return value from fread = %zd",
                  len, ret);
           free(inbuf);
           fclose(stream);
@@ -351,8 +360,7 @@ void test_nuttx_fs_stream04(FAR void **state)
 
       if (ferror(stream) != 0)
         {
-          syslog(LOG_ERR,
-                 "ferror did not return zero, return %d\n",
+          syslog(LOG_ERR, "ferror did not return zero, return %d\n",
                  ferror(stream));
           fclose(stream);
           assert_true(1 == 0);
@@ -386,14 +394,15 @@ void test_nuttx_fs_stream04(FAR void **state)
 
       if ((stream = fopen(TESTFILENAME, "r+")) == NULL)
         {
-          syslog(LOG_ERR,
-                 "fopen(%s) r+ failed, errno %d\n", TESTFILENAME, errno);
+          syslog(LOG_ERR, "fopen(%s) r+ failed, errno %d\n",
+                 TESTFILENAME, errno);
           assert_true(1 == 0);
         }
 
       if (feof(stream) != 0)
         {
-          syslog(LOG_ERR, "feof returned non-zero when it should not \n");
+          syslog(LOG_ERR,
+                 "feof returned non-zero when it should not \n");
           fclose(stream);
           assert_true(1 == 0);
         }

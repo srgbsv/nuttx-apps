@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/examples/usrsocktest/usrsocktest_wake_with_signal.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -648,7 +650,7 @@ TEST_SETUP(wake_with_signal)
 
 TEST_TEAR_DOWN(wake_with_signal)
 {
-  int ret;
+  int unused_data ret;
   int i;
 
   for (i = 0; i < MAX_THREADS; i++)

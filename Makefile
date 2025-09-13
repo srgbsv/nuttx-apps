@@ -1,6 +1,8 @@
 ############################################################################
 # apps/Makefile
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.  The
@@ -33,6 +35,7 @@ ifeq ($(CONFIG_WINDOWS_NATIVE),y)
 endif
 
 # Symbol table for loadable apps.
+#   SYMTABEXT: Extra arguments for mksymtab.sh
 
 SYMTABSRC = symtab_apps.c
 SYMTABOBJ = $(SYMTABSRC:.c=$(OBJEXT))
@@ -45,11 +48,12 @@ SYMTABOBJ = $(SYMTABSRC:.c=$(OBJEXT))
 all: $(BIN)
 
 .PHONY: import install dirlinks export .depdirs preconfig depend clean distclean
-.PHONY: context clean_context context_all register register_all
+.PHONY: context postinstall clean_context context_all postinstall_all register register_all
 .PRECIOUS: $(BIN)
 
 $(foreach SDIR, $(CONFIGURED_APPS), $(eval $(call SDIR_template,$(SDIR),all)))
 $(foreach SDIR, $(CONFIGURED_APPS), $(eval $(call SDIR_template,$(SDIR),install)))
+$(foreach SDIR, $(CONFIGURED_APPS), $(eval $(call SDIR_template,$(SDIR),postinstall)))
 $(foreach SDIR, $(CONFIGURED_APPS), $(eval $(call SDIR_template,$(SDIR),context)))
 $(foreach SDIR, $(CONFIGURED_APPS), $(eval $(call SDIR_template,$(SDIR),register)))
 $(foreach SDIR, $(CONFIGURED_APPS), $(eval $(call SDIR_template,$(SDIR),depend)))
@@ -95,6 +99,7 @@ $(BIN): $(foreach SDIR, $(CONFIGURED_APPS), $(SDIR)_all)
 .import: $(BIN)
 	$(Q) install libapps.a $(APPDIR)$(DELIM)import$(DELIM)libs
 	$(Q) $(MAKE) install
+	$(Q) $(MAKE) postinstall
 
 import: $(IMPORT_TOOLS)
 	$(Q) $(MAKE) context TOPDIR="$(APPDIR)$(DELIM)import"
@@ -107,7 +112,7 @@ else
 # In FLAT and protected modes, the modules have already been created.  A
 # symbol table is required.
 
-ifeq ($(CONFIG_BUILD_LOADABLE),)
+ifeq ($(CONFIG_MODULES),)
 ifeq ($(CONFIG_WINDOWS_NATIVE),y)
 $(BIN): $(foreach SDIR, $(CONFIGURED_APPS), $(SDIR)_all)
 else
@@ -119,19 +124,25 @@ else
 
 $(SYMTABSRC): $(foreach SDIR, $(CONFIGURED_APPS), $(SDIR)_all)
 	$(Q) $(MAKE) install
-	$(Q) $(APPDIR)$(DELIM)tools$(DELIM)mksymtab.sh $(BINDIR) >$@.tmp
+	$(Q) $(APPDIR)$(DELIM)tools$(DELIM)mksymtab.sh $(BINDIR) $(SYMTABEXT) >$@.tmp
 	$(Q) $(call TESTANDREPLACEFILE, $@.tmp, $@)
 
+ifneq ($(CONFIG_ARM_TOOLCHAIN_GHS),y)
 $(SYMTABOBJ): %$(OBJEXT): %.c
 	$(call COMPILE, $<, $@, -fno-lto -fno-builtin)
+else
+$(SYMTABOBJ): %$(OBJEXT): %.c
+	$(call COMPILE, $<, $@, -Onolink)
+endif
 
 $(BIN): $(SYMTABOBJ)
 	$(call ARLOCK, $(call CONVERT_PATH,$(BIN)), $^)
 	$(call LINK_WASM)
 
-endif # !CONFIG_BUILD_LOADABLE
+endif # !CONFIG_MODULES
 
 install: $(foreach SDIR, $(CONFIGURED_APPS), $(SDIR)_install)
+	$(Q) $(MAKE) postinstall_all
 
 # Link nuttx
 
@@ -167,6 +178,7 @@ dirlinks:
 
 context_all: $(foreach SDIR, $(CONFIGURED_APPS), $(SDIR)_context)
 register_all: $(foreach SDIR, $(CONFIGURED_APPS), $(SDIR)_register)
+postinstall_all: $(foreach SDIR, $(CONFIGURED_APPS), $(SDIR)_postinstall)
 
 staging:
 	$(Q) mkdir -p $@
@@ -213,6 +225,7 @@ clean: $(foreach SDIR, $(CLEANDIRS), $(SDIR)_clean)
 	$(call DELFILE, $(BIN))
 	$(call DELFILE, Kconfig)
 	$(call DELDIR, $(BINDIR))
+	$(call DELDIR, $(BINDIR_DEBUG))
 	$(call CLEAN)
 
 distclean: $(foreach SDIR, $(CLEANDIRS), $(SDIR)_distclean)

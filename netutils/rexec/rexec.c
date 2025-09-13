@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/netutils/rexec/rexec.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -87,7 +89,7 @@ static int do_rexec(FAR struct rexec_arg_s *arg)
   int sock;
   int ret;
 
-  sock = rexec_af(&arg->host, arg->port, arg->user,
+  sock = rexec_af(&arg->host, htons(arg->port), arg->user,
                   arg->password, arg->command,
                   NULL, arg->af);
   if (sock < 0)
@@ -153,7 +155,7 @@ static int do_rexec(FAR struct rexec_arg_s *arg)
 
 int main(int argc, FAR char **argv)
 {
-  char cmd[CONFIG_NSH_LINELEN];
+  char cmd[LINE_MAX];
   struct rexec_arg_s arg;
   int option;
   int i;

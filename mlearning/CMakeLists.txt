@@ -1,6 +1,8 @@
 # ##############################################################################
 # apps/mlearning/CMakeLists.txt
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
 # additional information regarding copyright ownership.  The ASF licenses this
@@ -17,5 +19,7 @@
 # the License.
 #
 # ##############################################################################
+
+nuttx_add_subdirectory()
 
 nuttx_generate_kconfig(MENUDESC "Machine Learning Support")

@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/examples/usrsocktest/usrsocktest_basic_getsockopt.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -214,7 +216,7 @@ TEST_SETUP(basic_getsockopt)
 
 TEST_TEAR_DOWN(basic_getsockopt)
 {
-  int ret;
+  int unused_data ret;
   if (sd >= 0)
     {
       ret = close(sd);

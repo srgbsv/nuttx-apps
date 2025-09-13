@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/mm/cases/mm_test_007.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdlib.h>
 #include <syslog.h>
@@ -55,7 +56,7 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Name: TestNuttxMm07
+ * Name: test_nuttx_mm07
  ****************************************************************************/
 
 void test_nuttx_mm07(FAR void **state)
@@ -69,7 +70,8 @@ void test_nuttx_mm07(FAR void **state)
   struct mallinfo test_befor_info;
   struct mallinfo test_during_info;
   struct mallinfo test_after_info;
-
+  struct mallinfo mem_info;
+  memset(&mem_info, 0, sizeof(mem_info));
   for (int i = 0; i < MEMORY_LIST_LENGTH; i++)
     {
       mem_list[i] = NULL;
@@ -79,13 +81,30 @@ void test_nuttx_mm07(FAR void **state)
 
   /* get a random size */
 
-  malloc_size = mmtest_get_rand_size(MALLOC_MIN_SIZE, MALLOC_MAX_SIZE);
   for (int k = 0; k < MEMORY_LIST_LENGTH; k++)
     {
+      get_mem_info(&mem_info);
+      malloc_size =
+          mmtest_get_rand_size(MALLOC_MIN_SIZE, MALLOC_MAX_SIZE);
+      if (mem_info.mxordblk - 16 < 0)
+        {
+          syslog(LOG_INFO,
+                 "TEST END because of the mem_info.mxordblk is:%d",
+                 mem_info.mxordblk);
+          break;
+        }
+
+      if (malloc_size > mem_info.mxordblk - 16)
+        {
+          syslog(LOG_INFO, "SET memsize to:%d", mem_info.mxordblk - 16);
+          malloc_size = mem_info.mxordblk - 16;
+        }
+
       if (malloc_size > 0)
         {
           tmp_str = (char *)malloc(malloc_size * sizeof(char));
         }
+
       else
         {
           malloc_size = 512;

@@ -1,13 +1,10 @@
 /****************************************************************************
  * apps/wireless/wapi/src/wireless.c
  *
- *   Copyright (C) 2011, 2017, 2019 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
- *
- * Adapted for NuttX from WAPI:
- *
- *   Copyright (c) 2010, Volkan YAZICI <volkan.yazici@gmail.com>
- *   All rights reserved.
+ * SPDX-License-Identifier: BSD-2-Clause
+ * SPDX-FileCopyrightText: 2011,2017,2019 Gregory Nutt. All rights reserved.
+ * SPDX-FileCopyrightText: 2010, Volkan YAZICI <volkan.yazici@gmail.com>
+ * SPDX-FileContributor: Gregory Nutt <gnutt@nuttx.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -1623,6 +1620,156 @@ int wapi_get_pta_prio(int sock, FAR const char *ifname,
       int errcode = errno;
       WAPI_IOCTL_STRERROR(SIOCGIWPTAPRIO, errcode);
       ret = -errcode;
+    }
+
+  return ret;
+}
+
+/****************************************************************************
+ * Name: wapi_set_pmksa
+ *
+ * Description:
+ *   Set the wlan pmksa.
+ *
+ ****************************************************************************/
+
+int wapi_set_pmksa(int sock, FAR const char *ifname,
+                   FAR const uint8_t *pmk, int len)
+{
+  struct iwreq wrq =
+  {
+  };
+
+  int ret;
+
+  WAPI_VALIDATE_PTR(pmk);
+
+  wrq.u.data.pointer = (FAR void *)pmk;
+  wrq.u.data.length = len;
+
+  strlcpy(wrq.ifr_name, ifname, IFNAMSIZ);
+  ret = ioctl(sock, SIOCSIWPMKSA, (unsigned long)((uintptr_t)&wrq));
+  if (ret < 0)
+    {
+      int errcode = errno;
+      WAPI_IOCTL_STRERROR(SIOCSIWPMKSA, errcode);
+      ret = -errcode;
+    }
+
+  return ret;
+}
+
+/****************************************************************************
+ * Name: wapi_get_pmksa
+ *
+ * Description:
+ *   Get the wlan pmksa.
+ *
+ ****************************************************************************/
+
+int wapi_get_pmksa(int sock, FAR const char *ifname,
+                   FAR uint8_t *pmk, int len)
+{
+  struct iwreq wrq =
+  {
+  };
+
+  int ret;
+
+  WAPI_VALIDATE_PTR(pmk);
+
+  wrq.u.data.pointer = pmk;
+  wrq.u.data.length = len;
+
+  strlcpy(wrq.ifr_name, ifname, IFNAMSIZ);
+  ret = ioctl(sock, SIOCGIWPMKSA, (unsigned long)((uintptr_t)&wrq));
+  if (ret < 0)
+    {
+      int errcode = errno;
+      WAPI_IOCTL_STRERROR(SIOCGIWPMKSA, errcode);
+      ret = -errcode;
+    }
+
+  return ret;
+}
+
+/****************************************************************************
+ * Name: wapi_extend_params
+ *
+ * Description:
+ *   wapi extension interface for privatization method.
+ *
+ ****************************************************************************/
+
+int wapi_extend_params(int sock, int cmd, FAR struct iwreq *wrq)
+{
+  int ret;
+
+  WAPI_VALIDATE_PTR(wrq);
+
+  if (cmd < SIOCIWFIRSTPRIV || cmd > SIOCIWLASTPRIV)
+    {
+      wlerr("extend ioctl cmd invalid");
+      return -EINVAL;
+    }
+
+  ret = ioctl(sock, cmd, (unsigned long)((uintptr_t)wrq));
+  if (ret < 0)
+    {
+      int errcode = errno;
+      wlerr("extend ioctl(%d): %d", cmd, errcode);
+      ret = -errcode;
+    }
+
+  return ret;
+}
+
+/****************************************************************************
+ * Name: wapi_set_power_save
+ *
+ * Description:
+ *   Set power save status of wifi.
+ *
+ ****************************************************************************/
+
+int wapi_set_power_save(int sock, FAR const char *ifname, bool on)
+{
+  struct iwreq wrq =
+  {
+  };
+
+  int ret;
+
+  wrq.u.power.flags = on;
+  strlcpy(wrq.ifr_name, ifname, IFNAMSIZ);
+  ret = wapi_extend_params(sock, SIOCSIWPWSAVE, &wrq);
+
+  return ret;
+}
+
+/****************************************************************************
+ * Name: wapi_get_power_save
+ *
+ * Description:
+ *   Get power save status of wifi.
+ *
+ ****************************************************************************/
+
+int wapi_get_power_save(int sock, FAR const char *ifname, bool *on)
+{
+  struct iwreq wrq =
+  {
+  };
+
+  int ret;
+
+  WAPI_VALIDATE_PTR(on);
+
+  strlcpy(wrq.ifr_name, ifname, IFNAMSIZ);
+  ret = wapi_extend_params(sock, SIOCGIWPWSAVE, &wrq);
+  if (ret >= 0)
+    {
+      *on = wrq.u.power.flags;
     }
 
   return ret;

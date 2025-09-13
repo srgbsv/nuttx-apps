@@ -1,6 +1,8 @@
 # ##############################################################################
 # apps/crypto/tinycrypt/CMakeLists.txt
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
 # additional information regarding copyright ownership.  The ASF licenses this
@@ -55,6 +57,8 @@ if(CONFIG_TINYCRYPT)
   # ############################################################################
 
   set(INCDIR ${TINYCRYPT_DIR}/lib/include)
+
+  nuttx_export_header(TARGET tinycrypt INCLUDE_DIRECTORIES ${INCDIR})
 
   # ############################################################################
   # Sources

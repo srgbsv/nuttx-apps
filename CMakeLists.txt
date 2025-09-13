@@ -1,6 +1,8 @@
 # ##############################################################################
 # apps/CMakeLists.txt
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
 # additional information regarding copyright ownership.  The ASF licenses this
@@ -27,6 +29,12 @@
 # ~~~
 
 if(CONFIG_APPS_DIR)
+  # add apps cmake modules
+  list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
+  include(nuttx_add_luamod)
+  include(nuttx_add_wamrmod)
+  include(nuttx_add_rust)
+  include(nuttx_wasm_interface)
   nuttx_add_library(apps)
   if(NOT EXISTS {NUTTX_APPS_BINDIR}/dummy.c)
     file(TOUCH ${NUTTX_APPS_BINDIR}/dummy.c)
@@ -59,8 +67,9 @@ add_subdirectory(platform)
 add_subdirectory(sdr)
 add_subdirectory(snow)
 add_subdirectory(system)
+add_subdirectory(tee)
 add_subdirectory(testing)
-add_subdirectory(tools)
+add_subdirectory(videoutils)
 add_subdirectory(wireless)
 
 # add examples and external at the end to allow library dependencies
@@ -69,6 +78,7 @@ if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/external)
   add_subdirectory(external)
 endif()
 
+add_subdirectory(tools) # after traversing all subdirectories
 add_subdirectory(builtin) # must be last
 
 nuttx_generate_kconfig()

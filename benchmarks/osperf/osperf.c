@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/benchmarks/osperf/osperf.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -69,6 +71,7 @@ static size_t pthread_switch_performance(void);
 static size_t context_switch_performance(void);
 static size_t hpwork_performance(void);
 static size_t poll_performance(void);
+static size_t pipe_performance(void);
 static size_t semwait_performance(void);
 static size_t sempost_performance(void);
 
@@ -83,6 +86,7 @@ static const struct performance_entry_s g_entry_list[] =
   {"context-switch", context_switch_performance},
   {"hpwork", hpwork_performance},
   {"poll-write", poll_performance},
+  {"pipe-rw", pipe_performance},
   {"semwait", semwait_performance},
   {"sempost", sempost_performance},
 };
@@ -131,7 +135,7 @@ static size_t performance_gettime(FAR struct performance_time_s *result)
 static FAR void *pthread_switch_task(FAR void *arg)
 {
   FAR struct performance_thread_s *perf = arg;
-  irq_t flags = enter_critical_section();
+  irqstate_t flags = enter_critical_section();
   sem_wait(&perf->sem);
   performance_end(&perf->time);
   leave_critical_section(flags);
@@ -186,10 +190,10 @@ static size_t pthread_create_performance(void)
 }
 
 /****************************************************************************
- * Contxt create performance
+ * Context create performance
  ****************************************************************************/
 
-static FAR void *context_swtich_task(FAR void *arg)
+static FAR void *context_switch_task(FAR void *arg)
 {
   FAR struct performance_time_s *time = arg;
   sched_yield();
@@ -202,7 +206,7 @@ static size_t context_switch_performance(void)
   struct performance_time_s time;
   int tid;
 
-  tid = performance_thread_create(context_swtich_task, &time,
+  tid = performance_thread_create(context_switch_task, &time,
                                   CONFIG_INIT_PRIORITY);
   sched_yield();
   performance_start(&time);
@@ -237,6 +241,7 @@ static size_t hpwork_performance(void)
     (FAR void *)&result
   };
 
+  memset(&result, 0, sizeof(result));
   memset(&work, 0, sizeof(work));
   performance_start(&result);
   ret = work_queue(HPWORK, &work, work_handle, args, 0);
@@ -281,9 +286,33 @@ static size_t poll_performance(void)
   poll(&fds, 1, -1);
   performance_end(&result);
 
+  pthread_join(ret, NULL);
   close(pipefd[0]);
   close(pipefd[1]);
-  pthread_join(ret, NULL);
+  return performance_gettime(&result);
+}
+
+/****************************************************************************
+ *  pipe performance
+ ****************************************************************************/
+
+static size_t pipe_performance(void)
+{
+  struct performance_time_s result;
+  int pipefd[2];
+  int ret;
+  char r;
+
+  ret = pipe(pipefd);
+  DEBUGASSERT(ret == 0);
+
+  performance_start(&result);
+  write(pipefd[0], "a", 1);
+  read(pipefd[1], &r, 1);
+  performance_end(&result);
+
+  close(pipefd[0]);
+  close(pipefd[1]);
   return performance_gettime(&result);
 }
 
@@ -353,7 +382,7 @@ static void performance_run(const FAR struct performance_entry_s *item,
 
   for (i = 0; i < count; i++)
     {
-      irq_t flags = enter_critical_section();
+      irqstate_t flags = enter_critical_section();
       size_t time = item->entry();
       leave_critical_section(flags);
 

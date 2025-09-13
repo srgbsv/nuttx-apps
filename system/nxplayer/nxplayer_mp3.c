@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/system/nxplayer/nxplayer_mp3.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -43,7 +45,7 @@
 #define ID3V2_BIT_MASK 0x7F
 
 /****************************************************************************
- * Private Type Declarations
+ * Private Types
  ****************************************************************************/
 
 const static uint16_t g_mpa_freq_tab[3] =

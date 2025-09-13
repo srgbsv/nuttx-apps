@@ -1,6 +1,8 @@
 # ##############################################################################
 # apps/builtin/CMakeLists.txt
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
 # additional information regarding copyright ownership.  The ASF licenses this
@@ -24,6 +26,8 @@ if(CONFIG_BUILTIN)
 
   # generate registry
   get_property(nuttx_app_libs GLOBAL PROPERTY NUTTX_APPS_LIBRARIES)
+  get_property(only_registers GLOBAL PROPERTY NUTTX_APPS_ONLY_REGISTER)
+  list(APPEND nuttx_app_libs ${only_registers})
   set(builtin_list_string)
   set(builtin_proto_string)
   foreach(module ${nuttx_app_libs})

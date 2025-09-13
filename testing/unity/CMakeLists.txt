@@ -1,6 +1,8 @@
 # ##############################################################################
 # apps/testing/unity/CMakeLists.txt
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
 # additional information regarding copyright ownership.  The ASF licenses this
@@ -27,18 +29,8 @@ if(CONFIG_TESTING_UNITY)
       DOWNLOAD_NAME "v${CONFIG_TESTING_UNITY_VERSION}.tar.gz"
       DOWNLOAD_DIR ${CMAKE_CURRENT_LIST_DIR}
       URL "${CONFIG_TESTING_UNITY_URL}/v${CONFIG_TESTING_UNITY_VERSION}.tar.gz"
-          SOURCE_DIR
-          ${CMAKE_CURRENT_LIST_DIR}/Unity
-          BINARY_DIR
+          SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/Unity BINARY_DIR
           ${CMAKE_BINARY_DIR}/apps/testing/unity/unity
-          CONFIGURE_COMMAND
-          ""
-          BUILD_COMMAND
-          ""
-          INSTALL_COMMAND
-          ""
-          TEST_COMMAND
-          ""
       DOWNLOAD_NO_PROGRESS true
       TIMEOUT 30)
 

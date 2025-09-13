@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/mm/tool/mem_cycle_opt_perf_test.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -42,8 +43,9 @@
 
 static void show_usage(void)
 {
-  printf("\nUsage: mm_stress_test  <min_size>  \
-          <max_size>  <test_num> <delay_time>\n");
+  printf(
+      "\nUsage: mm_stress_test  <min_size>  <max_size>  <test_num> "
+      "<delay_time>\n");
   printf("\nWhere:\n");
   printf("  <min_size>    Minimum number of memory requests.\n");
   printf("  <max_size>    Maximum number of memory requests.\n");
@@ -52,21 +54,22 @@ static void show_usage(void)
 }
 
 /****************************************************************************
- * Public Functions
- ****************************************************************************/
-
-/****************************************************************************
  * Name: main
  ****************************************************************************/
 
 int main(int argc, FAR char *argv[])
 {
   int malloc_size;
-  int mallc_min_size; /* The minimum memory length requested in the test */
-  int mallc_max_size; /* The maximum memory length requested in the test */
+  int mallc_min_size; /* The minimum memory length requested in the test
+                       */
+  int mallc_max_size; /* The maximum memory length requested in the test
+                       */
   int test_num;
   int application_delay_time = 1; /* Delay in test */
-  char check_character;           /* Memory write content check character */
+
+  /* Memory write content check character */
+
+  char check_character;
   char *address_ptr = NULL;
   struct timespec t_start;
   struct timespec t_end;
@@ -92,19 +95,22 @@ int main(int argc, FAR char *argv[])
       clock_gettime(CLOCK_MONOTONIC, &t_start);
       address_ptr = (char *)malloc(malloc_size * sizeof(char));
       clock_gettime(CLOCK_MONOTONIC, &t_end);
-      timedif = 1000000 * (t_end.tv_sec - t_start.tv_sec)
-                + (t_end.tv_nsec - t_start.tv_nsec) / 1000;
+      timedif = 1000000 * (t_end.tv_sec - t_start.tv_sec) +
+                (t_end.tv_nsec - t_start.tv_nsec) / 1000;
       if (address_ptr != NULL)
         {
           syslog(LOG_INFO,
-          "[Test malloc] (address:%p size:%d) takes:%ld microseconds\n",
-          address_ptr, malloc_size, timedif);
+                 "[Test malloc] (address:%p size:%d) takes:%ld "
+                 "microseconds\n",
+                 address_ptr, malloc_size, timedif);
           memset(address_ptr, check_character, malloc_size);
         }
+
       else
         {
           syslog(LOG_ERR,
-          "Malloc failed ! The remaining memory may be insufficient\n");
+                 "Malloc failed ! The remaining memory may be "
+                 "insufficient\n");
           syslog(LOG_ERR, "Continue to test !!\n");
           continue;
         }
@@ -126,11 +132,12 @@ int main(int argc, FAR char *argv[])
       /* Free test memory */
 
       clock_gettime(CLOCK_MONOTONIC, &t_end);
-      timedif = 1000000 * (t_end.tv_sec - t_start.tv_sec)
-                + (t_end.tv_nsec - t_start.tv_nsec) / 1000;
-      syslog(LOG_INFO,
-             "[Test free] (address:%p size:%d) takes:%ld microseconds\n\n",
-             address_ptr, malloc_size, timedif);
+      timedif = 1000000 * (t_end.tv_sec - t_start.tv_sec) +
+                (t_end.tv_nsec - t_start.tv_nsec) / 1000;
+      syslog(
+          LOG_INFO,
+          "[Test free] (address:%p size:%d) takes:%ld microseconds\n\n",
+          address_ptr, malloc_size, timedif);
       free(address_ptr);
       usleep(application_delay_time);
     }

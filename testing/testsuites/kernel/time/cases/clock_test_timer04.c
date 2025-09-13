@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/time/cases/clock_test_timer04.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -43,8 +44,8 @@
  * Pre-processor Definitions
  ****************************************************************************/
 
-/* signo should be in the range SIGRTMIN to
- * SIGRTMAX when SA_SIGINFO flag is set.
+/* signo should be in the range SIGRTMIN to SIGRTMAX when SA_SIGINFO flag
+ * is set.
  */
 
 #define SIG SIGRTMIN
@@ -54,17 +55,17 @@
  * Private Data
  ****************************************************************************/
 
-static int test_timer04_g_handler_flag;
+static int test_timer04_g_handlerflag;
 
 /****************************************************************************
  * Private Functions
  ****************************************************************************/
 
 /****************************************************************************
- * Name: sig_handler
+ * Name: sighandler
  ****************************************************************************/
 
-static void sig_handler(int sig, siginfo_t *si, void *uc)
+static void sighandler(int sig, siginfo_t *si, void *uc)
 {
   if (si == NULL)
     {
@@ -72,7 +73,7 @@ static void sig_handler(int sig, siginfo_t *si, void *uc)
       return;
     }
 
-  test_timer04_g_handler_flag++;
+  test_timer04_g_handlerflag++;
   syslog(LOG_INFO, "sig %d, si %p, uc %p\n", sig, si, uc);
 }
 
@@ -97,7 +98,7 @@ void test_nuttx_clock_test_timer04(FAR void **state)
   /* Install handler for timer signal. */
 
   sa.sa_flags = SA_SIGINFO;
-  sa.sa_sigaction = sig_handler;
+  sa.sa_sigaction = sighandler;
   sigemptyset(&sa.sa_mask);
   ret = sigaction(SIG, &sa, NULL);
   syslog(LOG_INFO, "sigaction %d: %d", SIG, ret);
@@ -150,12 +151,12 @@ void test_nuttx_clock_test_timer04(FAR void **state)
 
   syslog(LOG_INFO, "sleep another %ds", interval);
   sleep(interval); /* should be interrupted */
-  syslog(LOG_INFO, "sleep time over, g_handlerFlag = %d",
-         test_timer04_g_handler_flag);
+  syslog(LOG_INFO, "sleep time over, g_handlerflag = %d",
+         test_timer04_g_handlerflag);
 
   ret = timer_delete(timerid);
   syslog(LOG_INFO, "timer_delete %p %d", timerid, ret);
   assert_int_equal(ret, 0);
 
-  assert_int_not_equal(test_timer04_g_handler_flag, 0);
+  assert_int_not_equal(test_timer04_g_handlerflag, 0);
 }

@@ -1,6 +1,8 @@
 # ##############################################################################
 # apps/system/adb/CMakeLists.txt
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
 # additional information regarding copyright ownership.  The ASF licenses this
@@ -32,19 +34,9 @@ if(CONFIG_SYSTEM_ADBD)
 
     FetchContent_Declare(
       microADB
-      URL "${ADBD_URL}/${ADBD_VERSION}.zip"
-          SOURCE_DIR
-          ${CMAKE_CURRENT_LIST_DIR}/microADB
-          BINARY_DIR
+      URL "${ADBD_URL}/${ADBD_VERSION}.zip" SOURCE_DIR
+          ${CMAKE_CURRENT_LIST_DIR}/microADB BINARY_DIR
           ${CMAKE_BINARY_DIR}/apps/system/microADB/microADB
-          CONFIGURE_COMMAND
-          ""
-          BUILD_COMMAND
-          ""
-          INSTALL_COMMAND
-          ""
-          TEST_COMMAND
-          ""
       DOWNLOAD_NO_PROGRESS true
       TIMEOUT 30)
 
@@ -92,7 +84,7 @@ if(CONFIG_SYSTEM_ADBD)
 
   nuttx_add_application(
     MODULE
-    ${CONFIG_ADB_SERVER}
+    ${CONFIG_SYSTEM_ADBD}
     NAME
     ${CONFIG_ADBD_PROGNAME}
     SRCS

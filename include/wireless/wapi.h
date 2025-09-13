@@ -1,21 +1,12 @@
 /****************************************************************************
  * apps/include/wireless/wapi.h
  *
- *   Copyright (C) 2017, 2019 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
- *
- * Adapted for NuttX from WAPI:
- *
- *   Copyright (c) 2010, Volkan YAZICI <volkan.yazici@gmail.com>
- *   All rights reserved.
- *
- * And includes WPA supplicant logic contributed by:
- *
- *   Author: Simon Piriou <spiriou31@gmail.com>
- *
- * Which was adapted to NuttX from driver_ext.h
- *
- *   Copyright (c) 2003-2005, Jouni Malinen <j@w1.fi>
+ * SPDX-License-Identifier: BSD-3-Clause
+ * SPDX-FileCopyrightText: 2017,2019 Gregory Nutt
+ * SPDX-FileCopyrightText: 2010, Volkan YAZICI <volkan.yazici@gmail.com>
+ * SPDX-FileCopyrightText: 2003-2005, Jouni Malinen <j@w1.fi>
+ * SPDX-FileContributor: Gregory Nutt <gnutt@nuttx.org>
+ * SPDX-FileContributor: Simon Piriou <spiriou31@gmail.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -53,6 +44,7 @@
  * Included Files
  ****************************************************************************/
 
+#include <stdbool.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <net/ethernet.h>
@@ -962,6 +954,58 @@ int wapi_set_pta_prio(int sock, FAR const char *ifname,
 
 int wapi_get_pta_prio(int sock, FAR const char *ifname,
                       enum wapi_pta_prio_e *pta_prio);
+
+/****************************************************************************
+ * Name: wapi_set_pmksa
+ *
+ * Description:
+ *   Set the wlan pmksa.
+ *
+ ****************************************************************************/
+
+int wapi_set_pmksa(int sock, FAR const char *ifname,
+                   FAR const uint8_t *pmk, int len);
+
+/****************************************************************************
+ * Name: wapi_get_pmksa
+ *
+ * Description:
+ *   Get the wlan pmksa.
+ *
+ ****************************************************************************/
+
+int wapi_get_pmksa(int sock, FAR const char *ifname,
+                   FAR uint8_t *pmk, int len);
+
+/****************************************************************************
+ * Name: wapi_extend_params
+ *
+ * Description:
+ *   wapi extension interface for privatization method.
+ *
+ ****************************************************************************/
+
+int wapi_extend_params(int sock, int cmd, FAR struct iwreq *wrq);
+
+/****************************************************************************
+ * Name: wapi_set_power_save
+ *
+ * Description:
+ *   Set power save status of wifi.
+ *
+ ****************************************************************************/
+
+int wapi_set_power_save(int sock, FAR const char *ifname, bool on);
+
+/****************************************************************************
+ * Name: wapi_get_power_save
+ *
+ * Description:
+ *   Get power save status of wifi.
+ *
+ ****************************************************************************/
+
+int wapi_get_power_save(int sock, FAR const char *ifname, bool *on);
 
 #undef EXTERN
 #ifdef __cplusplus

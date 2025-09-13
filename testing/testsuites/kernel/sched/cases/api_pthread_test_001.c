@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/sched/cases/api_pthread_test_001.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdio.h>
 #include <syslog.h>
@@ -44,10 +45,10 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Name: sched_pthread01_threadroutine
+ * Name: schedpthread01threadroutine
  ****************************************************************************/
 
-static void *sched_pthread01_threadroutine(void *arg)
+static void *schedpthread01threadroutine(void *arg)
 {
   int flag;
   flag = 1;
@@ -70,7 +71,7 @@ void test_nuttx_sched_pthread01(FAR void **state)
 
   /* create thread */
 
-  pthread_create(&p_t, NULL, sched_pthread01_threadroutine, &run_flag);
+  pthread_create(&p_t, NULL, schedpthread01threadroutine, &run_flag);
 
   /* pthread_join Wait for the thread to end */
 

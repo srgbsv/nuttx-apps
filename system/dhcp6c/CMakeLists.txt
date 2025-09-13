@@ -1,6 +1,8 @@
 # ##############################################################################
 # apps/system/dhcp6c/CMakeLists.txt
 #
+# SPDX-License-Identifier: Apache-2.0
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
 # additional information regarding copyright ownership.  The ASF licenses this
@@ -21,7 +23,7 @@
 if(CONFIG_SYSTEM_DHCPC_RENEW6)
   nuttx_add_application(
     NAME
-    dhcpc6
+    ${CONFIG_DHCPC_RENEW6_PROGNAME}
     SRCS
     renew6_main.c
     STACKSIZE

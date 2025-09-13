@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/system/nxrecorder/nxrecorder_main.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -49,7 +51,7 @@
 #endif
 
 /****************************************************************************
- * Private Type Declarations
+ * Private Types
  ****************************************************************************/
 
 struct mp_cmd_s
@@ -529,7 +531,7 @@ static int nxrecorder_cmd_help(FAR struct nxrecorder_s *precorder,
 
 int main(int argc, FAR char *argv[])
 {
-  char                    buffer[CONFIG_NSH_LINELEN];
+  char                    buffer[LINE_MAX];
   int                     len;
   int                     x;
   int                     running;

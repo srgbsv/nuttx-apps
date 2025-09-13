@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/mm/cases/mm_test_008.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdlib.h>
 #include <syslog.h>
@@ -52,11 +53,7 @@
 #define MALLOC_MIN_SIZE 32
 #define MALLOC_MAX_SIZE 2048
 
-/****************************************************************************
- * Private Functions
- ****************************************************************************/
-
-static int test_nuttx08_routine_1(int argc, char *argv[])
+static int test_nuttx_08_routine_1(int argc, char *argv[])
 {
   char *ptr = NULL;
   char *tmp_ptr = NULL;
@@ -91,7 +88,7 @@ static int test_nuttx08_routine_1(int argc, char *argv[])
   return 0;
 }
 
-static int test_nuttx08_routine_2(int argc, char *argv[])
+static int test_nuttx_08_routine_2(int argc, char *argv[])
 {
   char *temp_ptr = NULL;
   int flag = 0;
@@ -115,15 +112,32 @@ static int test_nuttx08_routine_2(int argc, char *argv[])
   return 0;
 }
 
-static int test_nuttx08_routine_3(int argc, char *argv[])
+static int test_nuttx_08_routine_3(int argc, char *argv[])
 {
   char *pm;
   unsigned long memsize;
+  struct mallinfo mem_info;
+  memset(&mem_info, 0, sizeof(mem_info));
   for (int i = 0; i < 500; i++)
     {
       /* Apply for as much memory as a system allows */
 
+      get_mem_info(&mem_info);
       memsize = mmtest_get_rand_size(1024, 2048);
+      if (mem_info.mxordblk - 16 < 0)
+        {
+          syslog(LOG_INFO,
+                 "TEST END because of the mem_info.mxordblk is:%d",
+                 mem_info.mxordblk);
+          break;
+        }
+
+      if (memsize > mem_info.mxordblk - 16)
+        {
+          syslog(LOG_INFO, "SET memsize to:%d", mem_info.mxordblk - 16);
+          memsize = mem_info.mxordblk - 16;
+        }
+
       pm = malloc(memsize);
       assert_non_null(pm);
       free(pm);
@@ -137,7 +151,7 @@ static int test_nuttx08_routine_3(int argc, char *argv[])
  ****************************************************************************/
 
 /****************************************************************************
- * Name: TestNuttxMm08
+ * Name: test_nuttx_mm08
  ****************************************************************************/
 
 void test_nuttx_mm08(FAR void **state)
@@ -145,14 +159,14 @@ void test_nuttx_mm08(FAR void **state)
   pid_t pid;
   int status;
 
-  pid = task_create("TestNuttx08_routine_1",
-             TASK_PRIORITY, DEFAULT_STACKSIZE, test_nuttx08_routine_1, NULL);
+  pid = task_create("test_nuttx_08_routine_1", TASK_PRIORITY,
+                    DEFAULT_STACKSIZE, test_nuttx_08_routine_1, NULL);
   assert_true(pid > 0);
-  pid = task_create("TestNuttx08_routine_2",
-             TASK_PRIORITY, DEFAULT_STACKSIZE, test_nuttx08_routine_2, NULL);
+  pid = task_create("test_nuttx_08_routine_2", TASK_PRIORITY,
+                    DEFAULT_STACKSIZE, test_nuttx_08_routine_2, NULL);
   assert_true(pid > 0);
-  pid = task_create("TestNuttx08_routine_3",
-             TASK_PRIORITY, DEFAULT_STACKSIZE, test_nuttx08_routine_3, NULL);
+  pid = task_create("test_nuttx_08_routine_3", TASK_PRIORITY,
+                    DEFAULT_STACKSIZE, test_nuttx_08_routine_3, NULL);
   assert_true(pid > 0);
   waitpid(pid, &status, 0);
 }

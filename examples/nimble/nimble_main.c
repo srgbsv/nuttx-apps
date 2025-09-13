@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/examples/nimble/nimble_main.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -32,8 +34,6 @@
 #include <unistd.h>
 #include <sys/boardctl.h>
 #include <assert.h>
-#include <stdbool.h>
-#include <stdint.h>
 
 #include "netutils/netinit.h"
 
@@ -49,7 +49,6 @@
 #include "services/ias/ble_svc_ias.h"
 #include "services/lls/ble_svc_lls.h"
 #include "services/tps/ble_svc_tps.h"
-#include "services/gap/ble_svc_gap.h"
 #include "services/bas/ble_svc_bas.h"
 #include "services/dis/ble_svc_dis.h"
 
@@ -68,7 +67,6 @@
  ****************************************************************************/
 
 void ble_hci_sock_ack_handler(FAR void *param);
-void ble_hci_sock_init(void);
 void ble_hci_sock_set_device(int dev);
 
 /****************************************************************************
@@ -270,7 +268,6 @@ int main(int argc, FAR char *argv[])
 #endif
 
   nimble_port_init();
-  ble_hci_sock_init();
 
   /* Initialize services */
 

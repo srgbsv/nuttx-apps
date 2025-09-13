@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/testing/testsuites/kernel/sched/cases/api_task_test_006.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -21,7 +23,6 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
-
 #include <nuttx/config.h>
 #include <stdio.h>
 #include <syslog.h>
@@ -48,10 +49,10 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Name: sched_task06_routine
+ * Name: schedtask06routine
  ****************************************************************************/
 
-static int sched_task06_routine(int argc, char *argv[])
+static int schedtask06routine(int argc, char *argv[])
 {
   return 0;
 }
@@ -73,8 +74,8 @@ void test_nuttx_sched_task06(FAR void **state)
 
   /* struct sched_param task_entry_param */
 
-  pid = task_create("sched_task06_routine", TASK_PRIORITY,
-                    DEFAULT_STACKSIZE, sched_task06_routine, NULL);
+  pid = task_create("schedtask06routine", TASK_PRIORITY,
+                    DEFAULT_STACKSIZE, schedtask06routine, NULL);
   assert_true(pid > 0);
   priority_max = sched_get_priority_max(SCHED_FIFO);
   priority_min = sched_get_priority_min(SCHED_FIFO);

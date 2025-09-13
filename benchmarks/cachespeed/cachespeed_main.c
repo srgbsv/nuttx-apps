@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/benchmarks/cachespeed/cachespeed_main.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -141,7 +143,7 @@ static void report_line(size_t bytes, TIME cost)
 
   if (cost == 0)
     {
-      printf(CACHESPEED_PREFIX "%d bytes cost time too small!\n", bytes);
+      printf(CACHESPEED_PREFIX "%zu bytes cost time too small!\n", bytes);
       return;
     }
 
@@ -149,7 +151,7 @@ static void report_line(size_t bytes, TIME cost)
 
   rate = 1.00 * bytes * REPEAT_NUM / cost;
 
-  printf("%d Bytes: %4lf, %4llu, %4llu\n\r",
+  printf("%zu Bytes: %4lf, %4" PRIu64", %4" PRIu64"\n\r",
          bytes, rate, cost / REPEAT_NUM, cost);
 }
 

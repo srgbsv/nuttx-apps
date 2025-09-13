@@ -11,7 +11,7 @@ if INTERPRETERS_WAMR
 
 config INTERPRETERS_WAMR_VERSION
 	string "WAMR Version"
-	default "WAMR-04-15-2021"
+	default "WAMR-2.1.0"
 	---help---
 		Version WAMR-09-29-2020 and later (include main) supported.
 
@@ -46,6 +46,11 @@ config INTERPRETERS_WAMR_AOT_QUICK_ENTRY
 		AOTed function from host side in some cases with simple
 		signature.
 		Enable this option will increase the size of runtime, ~8KB.
+
+config INTERPRETERS_WAMR_AOT_STACK_FRAME
+	bool "Enable AOT stack frame"
+	default n
+	depends on INTERPRETERS_WAMR_AOT
 
 config INTERPRETERS_WAMR_AOT_WORD_ALIGN_READ
 	bool "Make WAMR AOT loader use word-aligned read"
@@ -128,6 +133,10 @@ config INTERPRETERS_WAMR_REF_TYPES
 	bool "Enable reference types support"
 	default n
 
+config INTERPRETERS_WAMR_GC
+	bool "Enable GC support"
+	default n
+
 config INTERPRETERS_WAMR_ENABLE_SPEC_TEST
 	bool "Enable spectest support"
 	default n
@@ -180,6 +189,10 @@ config INTERPRETERS_WAMR_SHARED_MEMORY
 
 config INTERPRETERS_WAMR_BULK_MEMORY
 	bool "Enable bluk memory"
+	default n
+
+config INTERPRETERS_WAMR_ENABLE_EXCE_HANDLING
+	bool "Enable exception-handling"
 	default n
 
 config INTERPRETERS_WAMR_PERF_PROFILING
@@ -235,4 +248,12 @@ config INTERPRETERS_WAMR_CONFIGUABLE_BOUNDS_CHECKS
 		disable bounds checks passing --disable-bounds-checks to
 		iwasm.
 
-endif # INTERPRETERS_WAMR
+config INTERPRETERS_WAMR_EXTERNAL_MODULE_REGISTRY
+	bool "Enable external module registry"
+	default n
+	---help---
+		This option enables the support for loading WASM modules from
+		external libraries, which is useful when you want to extend the
+		functionality of WAMR without modifying its source code.
+
+endif

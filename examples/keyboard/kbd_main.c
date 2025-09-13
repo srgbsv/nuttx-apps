@@ -1,6 +1,8 @@
 /****************************************************************************
  * apps/examples/keyboard/kbd_main.c
  *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.  The
@@ -139,8 +141,8 @@ int main(int argc, FAR char *argv[])
       else
         {
           printf("Sample  :\n");
-          printf("   code : %d\n",   sample.code);
-          printf("   type : %d\n",   sample.type);
+          printf("   code : %" PRIu32 "\n",   sample.code);
+          printf("   type : %" PRIu32 "\n",   sample.type);
         }
 
       if (nsamples && --nsamples <= 0)
