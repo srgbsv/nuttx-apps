@@ -1,0 +1,8 @@
+#
+# For a description of the syntax of this file, see the NuttX Build
+# System manual.
+#
+
+ifneq ($(CONFIG_SNOW_ROTOR),)
+CONFIGURED_APPS += $(APPDIR)/snow/rotor
+endif

@@ -21,3 +21,26 @@
 nuttx_add_subdirectory()
 
 nuttx_generate_kconfig(MENUDESC "Snowblower Software")
+
+# Include FetchContent for managing external dependencies
+include(FetchContent)
+
+# Fetch DroneCAN DSDL definitions
+FetchContent_Declare(
+    DSDL
+    GIT_REPOSITORY https://github.com/DroneCAN/DSDL.git
+    GIT_TAG master # Using master as in the Makefile, consider a specific tag for stability
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(DSDL)
+
+# Fetch DroneCAN DSDL compiler
+FetchContent_Declare(
+    dronecan_dsdlc
+    GIT_REPOSITORY https://github.com/DroneCAN/dronecan_dsdlc.git
+    GIT_TAG master # Using master as in the Makefile
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(dronecan_dsdlc)
+
+
