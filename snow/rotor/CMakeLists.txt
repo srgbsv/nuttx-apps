@@ -4,10 +4,12 @@
 #
 set(INCDIR ${NUTTX_APPS_DIR}/snow/rotor/lib/libdronecan/libcanard
              ${NUTTX_APPS_DIR}/snow/rotor/lib/libcanard/drivers/nuttx)
-set(INCDIR ${NUTTX_APPS_DIR/canutils/libdronecan/libc})
+list(APPEND INCDIR ${NUTTX_APPS_DIR}/canutils/libdronecan/libc)
+
 if(CONFIG_CANUTILS_LIBOPENCYPHAL)
   set(CFLAGS -DcanardInit=dronecanardInit)
 endif()
+include(include)
   
 nuttx_add_executable(rotor
   rotor_main.cpp
@@ -21,4 +23,4 @@ nuttx_add_executable(rotor
   src/providers/PwmOutput.cpp
   )
 
-target_include_directories(rotor PUBLIC include)
+target_include_directories(rotor PUBLIC include ${INCDIR})

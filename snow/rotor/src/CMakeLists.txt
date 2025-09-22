@@ -1,6 +1,9 @@
 
 set(SOURCE_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/MainController.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/EjectionController.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/controllers/CanController.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/controllers/MainController.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/providers/CanProvider.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/state/CanState.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/state/State.cpp
         PARENT_SCOPE
         )

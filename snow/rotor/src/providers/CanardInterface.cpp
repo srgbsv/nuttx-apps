@@ -1,10 +1,9 @@
-#include "CanardInterface.hpp"
+#include "../include/providers/CanardInterface.hpp"
 
 /*
   Transmits all frames from the TX queue, receives up to one frame.
 */
-void CanardInterface::process(uint32_t timeout_msec)
-{
+void CanardInterface::process(uint32_t timeout_msec) {
     // Transmitting
     for (const CanardCANFrame* txf = NULL; (txf = canardPeekTxQueue(&canard)) != NULL;) {
         const int16_t tx_res = socketcanTransmit(&socketcan, txf, 0);
@@ -23,7 +22,6 @@ void CanardInterface::process(uint32_t timeout_msec)
         }
     }
 }
-
 /*
   handle an incoming message
  */

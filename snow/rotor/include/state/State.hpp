@@ -1,26 +1,30 @@
 #pragma once
 
 #include <stdatomic.h>
-
 #include "CanState.hpp"
 
-class State
-{
-private:
-    /* data */
-    CanState _can_state;
-    
-public:
-    CanState getCanState();
-    State(/* args */);
-    ~State();
-};
+namespace Snow {
 
-State::State(/* args */)
-{
+    class State
+    {
+    private:
+        /* data */
+        CanState _can_state;
+        
+    public:
+        CanState getCanState();
+        State(/* args */);
+        ~State();
+    };
 
-}
 
-State::~State()
-{
+    State::State(/* args */)
+    {
+
+    }
+
+    State::~State()
+    {
+    }
+
 }

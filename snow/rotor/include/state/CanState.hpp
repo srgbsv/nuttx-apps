@@ -1,27 +1,27 @@
-#ifndef SNOW_ROTOR_CAN_STATE
-#define SNOW_ROTOR_CAN_STATE
+#pragma once
 
-class CanState
-{
-private:
-    bool _inited = false;
-    
-public:
-    void canInit(bool init);
-    void canRun(bool run);
+namespace Snow {
 
-    CanState(/* args */);
-    ~CanState();
-};
+    class CanState
+    {
+    private:
+        bool _inited = false;
+        
+    public:
+        void canInit(bool init);
+        void canRun(bool run);
 
-CanState::CanState(/* args */)
-{
+        CanState(/* args */);
+        ~CanState();
+    };
+
+    CanState::CanState(/* args */)
+    {
+        
+    }
+
+    CanState::~CanState()
+    {
+    }
     
 }
-
-CanState::~CanState()
-{
-}
-
-
-#endif //SNOW_ROTOR_CAN_STATE

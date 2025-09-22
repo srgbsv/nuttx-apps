@@ -150,7 +150,7 @@ void CanRotorNode::handleGetNodeInfo(const CanardRxTransfer& transfer, const uav
 /*
   handle a ESC RawCommand request
 */
-void CanRotorNode::handle_RawCommand(const CanardRxTransfer& transfer, const uavcan_equipment_esc_RawCommand& cmd)
+void CanRotorNode::handleRawCommand(const CanardRxTransfer& transfer, const uavcan_equipment_esc_RawCommand& cmd)
 {
     // remember the demand for the ESC status output
     const uint8_t num_throttles = MIN(cmd.cmd.len, NUM_ESCS);
@@ -165,7 +165,7 @@ void CanRotorNode::handle_RawCommand(const CanardRxTransfer& transfer, const uav
 /*
   handle parameter GetSet request
  */
-void CanRotorNode::handle_param_GetSet(const CanardRxTransfer& transfer, const uavcan_protocol_param_GetSetRequest& req)
+void CanRotorNode::handleParamGetSet(const CanardRxTransfer& transfer, const uavcan_protocol_param_GetSetRequest& req)
 {
     struct parameter *p = nullptr;
     if (req.name.len != 0) {
