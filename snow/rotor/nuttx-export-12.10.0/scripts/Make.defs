@@ -1,0 +1,51 @@
+ARCHCFLAGS       = -Wstrict-prototypes -Wno-attributes -Wno-unknown-pragmas -Wno-psabi
+ARCHCPUFLAGS     = -mlittle-endian -march=armv7e-m -mtune=cortex-m7 -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wa,-mthumb -Wa,-mimplicit-it=always
+ARCHCXXFLAGS     = -Wno-attributes -Wno-unknown-pragmas -Wno-psabi -std=gnu++17
+ARCHPICFLAGS     = -fpic -msingle-pic-base -mpic-register=r10
+ARCHWARNINGS     = 
+ARCHWARNINGSXX   = 
+ARCHOPTIMIZATION = -fomit-frame-pointer --param=min-pagesize=0 -fno-common -Wall -Wshadow -Wundef -ffunction-sections -fdata-sections -g
+CROSSDEV         = arm-none-eabi-
+CC               = arm-none-eabi-gcc
+CXX              = arm-none-eabi-g++
+CPP              = arm-none-eabi-gcc -E -P -x c
+LD               = arm-none-eabi-ld
+AR               = arm-none-eabi-ar rcs
+NM               = arm-none-eabi-nm
+STRIP            = arm-none-eabi-strip --strip-unneeded
+OBJCOPY          = arm-none-eabi-objcopy
+OBJDUMP          = arm-none-eabi-objdump
+ZIG              = zig
+ZIGFLAGS         = -target thumb-freestanding-eabihf -mcpu cortex_m7
+DC               = 
+DFLAGS           = 
+SWIFTC           = 
+SWIFTFLAGS       = 
+NXFLATLDFLAGS1   = -r -d -warn-common
+NXFLATLDFLAGS2   = -r -d -warn-common -T/home/sergey/DEV/DEV/DRONES/nuttx-git/nuttx/binfmt/libnxflat/gnu-nxflat-pcrel.ld -no-check-sections
+OBJEXT           = .o
+LIBEXT           = .a
+EXEEXT           = 
+HOSTCC           = cc
+HOSTINCLUDES     = 
+HOSTCFLAGS       = -O2 -Wall -Wstrict-prototypes -Wshadow -DHAVE_STRTOK_C=1 -DHAVE_STRNDUP=1
+HOSTLDFLAGS      = 
+HOSTEXEEXT       = 
+LDNAME           = flash.ld
+LDELFFLAGS       = -r /home/sergey/DEV/DEV/DRONES/nuttx-git/nuttx/arch/arm/src/crt0.o -e __start 
+LDMODULEFLAGS    = -r
+NUTTX_ARCH       = arm
+NUTTX_ARCH_CHIP  = stm32h7
+NUTTX_BOARD      = nucleo-h743zi
+NUTTX_BUILD      = flat
+NUTTX_CXX        = cxx
+LLVM_ARCHTYPE    = thumbv7em
+LLVM_CPUTYPE     = cortex-m7
+LLVM_ABITYPE     = eabihf
+EXTRA_LIBS       = /opt/st/stm32cubeclt_1.16.0/GNU-tools-for-STM32/bin/../lib/gcc/arm-none-eabi/12.3.1/thumb/v7e-m+dp/hard/libgcc.a /opt/st/stm32cubeclt_1.16.0/GNU-tools-for-STM32/bin/../lib/gcc/arm-none-eabi/12.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+dp/hard/libm.a /opt/st/stm32cubeclt_1.16.0/GNU-tools-for-STM32/bin/../lib/gcc/arm-none-eabi/12.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+dp/hard/libsupc++.a /opt/st/stm32cubeclt_1.16.0/GNU-tools-for-STM32/bin/../lib/gcc/arm-none-eabi/12.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m+dp/hard/libstdc++.a
+EXTRA_OBJS       = 
+HEAD_OBJ         = 
+LDENDGROUP       = 
+LDFLAGS          = --print-memory-usage --entry=__start -nostdlib --gc-sections --cref -Map=/home/sergey/DEV/DEV/DRONES/nuttx-git/nuttx/nuttx.map
+LDSTARTGROUP     = 
+LDLIBS           = -lsched -ldrivers -lboards -lc -lmm -larch -lxx -lapps -lfs -lbinfmt -lboard 

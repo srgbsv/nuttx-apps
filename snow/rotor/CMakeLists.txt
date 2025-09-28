@@ -4,7 +4,7 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 set(LIB_DIRECTORY "lib")
 
 if (STANDALONE_MAKE)
-    cmake_minimum_required(VERSION 3.25...3.20)
+    cmake_minimum_required(VERSION 3.20...3.25)
     include(CMakePrintHelpers)
 
     project(snowblower
@@ -24,7 +24,7 @@ if (STANDALONE_MAKE)
     set(AC_COMMON_FLAGS "${AC_COMMON_FLAGS} -Wall -Wshadow -Wundef -fno-strict-aliasing -Os")
     set(AC_COMMON_FLAGS "${AC_COMMON_FLAGS} -D_DEBUG -D_LIBCPP_BUILD_STATIC -D_LIBCPP_NO_EXCEPTIONS ")
     set(AC_COMMON_FLAGS "${AC_COMMON_FLAGS} -fno-exceptions -fcheck-new -fno-rtti -pedantic ")
-    set(AC_COMMON_FLAGS "${AC_COMMON_FLAGS} -nostdinc++")
+    #set(AC_COMMON_FLAGS "${AC_COMMON_FLAGS} -nostdinc++")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c11 -std=gnu++17")
 
     set(AC_DEFINES "${AC_DEFINES} -DCONFIG_WCHAR_BUILTIN -DDRONECAN_CXX_WRAPPERS")
@@ -34,7 +34,7 @@ if (STANDALONE_MAKE)
         ${NUTTX_PATH}/include
         ${NUTTX_PATH}/include/cxx
         ${NUTTX_PATH}/arch/chip
-        lib/uClibc++/include
+        #lib/uClibc++/include
         lib/libcanard
         lib/dsdl_generated/include
     )

@@ -4,8 +4,9 @@
 
 #pragma once
 
-#include "state/State.hpp"
+#include <memory>
 #include <stdatomic.h>
+#include "state/State.hpp"
 
 namespace Snow {
 

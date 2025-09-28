@@ -26,58 +26,64 @@
 #include <stdatomic.h>
 #include <memory>
 
-namespace Snow {
+namespace snow 
+{
 
-    class CanRotorNode  {
+namespace rotor
+{
 
-    public:
+class CanRotorNode  {
 
-        void startNode(const char *interface_name);
-        
-    private:
-        CanardInterface canard_iface{0};
+public:
 
-        // declare publishers for outgoing messages
-        Canard::Publisher<uavcan_protocol_NodeStatus> nodeStatus{canard_iface};
-        Canard::Publisher<uavcan_equipment_esc_Status> escStatus{canard_iface};
+    void startNode(const char *interface_name);
+    
+private:
+    CanardInterface canard_iface{0};
 
-        // incoming messages
-        void handleRawCommand(const CanardRxTransfer& transfer, const uavcan_equipment_esc_RawCommand& cmd);
-        Canard::ObjCallback<Snow::CanRotorNode, uavcan_equipment_esc_RawCommand> raw_command_cb{this, &handleRawCommand};
-        Canard::Subscriber<uavcan_equipment_esc_RawCommand> raw_command_listener{raw_command_cb, 0};
+    // declare publishers for outgoing messages
+    Canard::Publisher<uavcan_protocol_NodeStatus> nodeStatus{canard_iface};
+    Canard::Publisher<uavcan_equipment_esc_Status> escStatus{canard_iface};
 
-        // Node Info Server
-        void handleGetNodeInfo(const CanardRxTransfer& transfer, const uavcan_protocol_GetNodeInfoRequest& req);
-        Canard::ObjCallback<CanRotorNode, uavcan_protocol_GetNodeInfoRequest> node_info_req_cb{this, &handleGetNodeInfo};
-        Canard::Server<uavcan_protocol_GetNodeInfoRequest> node_info_server{canard_iface, node_info_req_cb};
+    // incoming messages
+    void handleRawCommand(const CanardRxTransfer& transfer, const uavcan_equipment_esc_RawCommand& cmd);
+    Canard::ObjCallback<CanRotorNode, uavcan_equipment_esc_RawCommand> raw_command_cb{this, &CanRotorNode::handleRawCommand};
+    Canard::Subscriber<uavcan_equipment_esc_RawCommand> raw_command_listener{raw_command_cb, 0};
 
-        // parameter server
-        void handleParamGetSet(const CanardRxTransfer& transfer, const uavcan_protocol_param_GetSetRequest& req);
-        Canard::ObjCallback<CanRotorNode, uavcan_protocol_param_GetSetRequest> param_get_set_req_cb{this, &handleParamGetSet};
-        Canard::Server<uavcan_protocol_param_GetSetRequest> param_server{canard_iface, param_get_set_req_cb};
-        void handleParamExecuteOpcode(const CanardRxTransfer& transfer, const uavcan_protocol_param_ExecuteOpcodeRequest& req);
-        Canard::ObjCallback<CanRotorNode, uavcan_protocol_param_ExecuteOpcodeRequest> param_executeopcode_req_cb{this, &handleParamExecuteOpcode};
-        Canard::Server<uavcan_protocol_param_ExecuteOpcodeRequest> param_opcode_server{canard_iface, param_executeopcode_req_cb};
+    // Node Info Server
+    void handleGetNodeInfo(const CanardRxTransfer& transfer, const uavcan_protocol_GetNodeInfoRequest& req);
+    Canard::ObjCallback<CanRotorNode, uavcan_protocol_GetNodeInfoRequest> node_info_req_cb{this, &CanRotorNode::handleGetNodeInfo};
+    Canard::Server<uavcan_protocol_GetNodeInfoRequest> node_info_server{canard_iface, node_info_req_cb};
 
-
-        // DNA request call
-        void requestDNA();
-
-        void sendNodeStatus(void);
-        void process1HzTasks(uint64_t timestamp_usec);
-        void sendRotorStatus(void);
+    // parameter server
+    void handleParamGetSet(const CanardRxTransfer& transfer, const uavcan_protocol_param_GetSetRequest& req);
+    Canard::ObjCallback<CanRotorNode, uavcan_protocol_param_GetSetRequest> param_get_set_req_cb{this, &handleParamGetSet};
+    Canard::Server<uavcan_protocol_param_GetSetRequest> param_server{canard_iface, param_get_set_req_cb};
+    void handleParamExecuteOpcode(const CanardRxTransfer& transfer, const uavcan_protocol_param_ExecuteOpcodeRequest& req);
+    Canard::ObjCallback<CanRotorNode, uavcan_protocol_param_ExecuteOpcodeRequest> param_executeopcode_req_cb{this, &handleParamExecuteOpcode};
+    Canard::Server<uavcan_protocol_param_ExecuteOpcodeRequest> param_opcode_server{canard_iface, param_executeopcode_req_cb};
 
 
-        // keep node_status around for updating status
-        uavcan_protocol_NodeStatus node_status_msg;
+    // DNA request call
+    void requestDNA();
 
-        /*
-        data for dynamic node allocation process
-        */
-        struct {
-            uint32_t send_next_node_id_allocation_request_at_ms;
-            uint32_t node_id_allocation_unique_id_offset;
-        } DNA;
-    };
+    void sendNodeStatus(void);
+    void process1HzTasks(uint64_t timestamp_usec);
+    void sendRotorStatus(void);
 
-}
+
+    // keep node_status around for updating status
+    uavcan_protocol_NodeStatus node_status_msg;
+
+    /*
+    data for dynamic node allocation process
+    */
+    struct {
+        uint32_t send_next_node_id_allocation_request_at_ms;
+        uint32_t node_id_allocation_unique_id_offset;
+    } DNA;
+};
+
+} // namespace rotor
+
+} // namespace snow
