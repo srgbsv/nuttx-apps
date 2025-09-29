@@ -8,21 +8,19 @@
 #include <stdatomic.h>
 #include "state/State.hpp"
 
-namespace Snow {
+class CanController
+{
+public:
+  CanController::run(const char * interface_name);
+  ~CanController();
 
-  class CanController
-  {
-  public:
-    CanController(std::shared_ptr<State> state);
-    ~CanController();
+  static int stop();
+  int run();
 
-    static int stop();
-    int run();
-
-  private:
-    // Private members
-    CanController() {};
-    std::shared_ptr<State> _state;
-  };
-
-}
+  static bool _is_running;
+  static bool _need_stop;
+private:
+  // Private members
+  CanController() {};
+  std::shared_ptr<State> _state;
+};

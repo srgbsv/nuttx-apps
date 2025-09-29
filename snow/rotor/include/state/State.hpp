@@ -3,12 +3,6 @@
 #include <stdatomic.h>
 #include "CanState.hpp"
 
-namespace snow 
-{
-
-namespace rotor 
-{
-
 class State
 {
 private:
@@ -30,7 +24,3 @@ State::State(/* args */)
 State::~State()
 {
 }
-
-} // namespace rotor
-
-} // namespace snow

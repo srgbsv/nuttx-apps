@@ -2,38 +2,15 @@
 // Created by sergey on 21.07.24.
 //
 
-#ifndef APPS_MAINCONTROLLER_H
-#define APPS_MAINCONTROLLER_H
+#pragma once
 #include <stdatomic.h>
-
-#include "../include/EjectionController.h"
-#include "../include/MotorController.h"
-
-
+ 
 extern pthread_mutex_t thrower_mutex;
 
 class MainController {
     private:
-    
 
-    const char* _motor_enable_in      = "/dev/pwmin1";
-    const char* _rotation_enable_in   = "/dev/pwmin2";
-
-    const char* _rotation_enable_gpio = "/dev/gpio1";
-    const char* _motor_enable_gpio    = "/dev/pwmout";
-    const char* _direction_gpio       = "/dev/gpio3";
-    const char* _angle_pwm_gpio       = "/dev/gpio4";
-
-    int _rotation_e_gpio_fd = 0;
-    int _motor_e_fd = 0;
-    int _direction_fd = 0;
-    int _angle_pwm_fd = 0;
-
-    static atomic_bool _task_should_exit;
-    static pid_t _task_id;
-    bool _should_exit = false;
-
-    static MainController* _object; // Not concurrency
+    static std::unique_ptr<MainController> _instance; // Not concurrency
 
     /**
 	 * @brief main Main entry point to the module that should be
@@ -42,7 +19,7 @@ class MainController {
 	 * @param argc Pointer to the task argument variable array.
 	 * @return Returns 0 iff successful, -1 otherwise.
      */
-    static int main (int argc, char* argv[]);
+    static int startMain (int argc, char* argv[]);
 
     /**
 	 * @brief Stars the command, ('command start'), checks if if is already
@@ -51,7 +28,7 @@ class MainController {
 	 * @param argc Pointer to the task argument variable array.
 	 * @return Returns 0 iff successful, -1 otherwise.
      */
-    static int start_command_base (int argc, char* argv[]);
+    static int startCommandBase (int argc, char* argv[]);
 
     /**
 	 * @brief Stops the command, ('command stop'), checks if it is running and if it is, request the module to stop and waits for the task to complete.
@@ -62,10 +39,9 @@ class MainController {
         lock_module ();
 
         if (is_running ()) {
-            MainController* object = _object;
 
-            if (object) {
-                object->request_stop ();
+            if (_instance) {
+                _instance->request_stop ();
 
                 unsigned int i = 0;
 
@@ -81,8 +57,7 @@ class MainController {
 
                         _task_id = -1;
 
-                        delete _object;
-                        _object;
+                        delete _instance;
 
                         ret = -1;
                         break;
@@ -189,5 +164,3 @@ class MainController {
 
 pid_t MainController::_task_id = -1;
 
-
-#endif // APPS_MAINCONTROLLER_H

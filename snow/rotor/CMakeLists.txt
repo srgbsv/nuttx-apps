@@ -17,7 +17,9 @@ if (STANDALONE_MAKE)
     # set(CMAKE_CXX_EXTENSIONS OFF)
     set(CMAKE_C_STANDARD 99)
 
-    set(NUTTX_PATH "${CMAKE_SOURCE_DIR}/nuttx-export-12.10.0")
+    set(NUTTX_PATH "${CMAKE_SOURCE_DIR}/../../../nuttx/nuttx-export-12.10.0")
+
+    message(STATUS "Nuttx directory: ${NUTTX_PATH}")
 
     #include(cmake/nucleo-f4x1re.cmake)
 

@@ -3,13 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <memory>
-
-namespace snow 
-{
-
-namespace rotor 
-{
-    
+  
 class SystemTools
 {
 private:
@@ -55,7 +49,3 @@ public:
     }
 
 };
-
-} //namespace rotor
-
-} // namespace snow

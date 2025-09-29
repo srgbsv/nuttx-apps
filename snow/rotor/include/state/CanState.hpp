@@ -1,11 +1,5 @@
 #pragma once
 
-namespace snow 
-{
-
-namespace rotor
-{
-
 class CanState
 {
 private:
@@ -27,7 +21,3 @@ CanState::CanState(/* args */)
 CanState::~CanState()
 {
 }
-    
-} // namespace rotor
-
-} // namespace snow

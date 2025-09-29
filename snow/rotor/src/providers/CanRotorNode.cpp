@@ -6,12 +6,7 @@
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #define C_TO_KELVIN(temp) (temp + 273.15f)
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
- 
-namespace snow 
-{
 
-namespace rotor 
-{
 
 /*
 a set of parameters to present to the user. In this example we don't
@@ -198,9 +193,9 @@ void CanRotorNode::handleParamGetSet(const CanardRxTransfer& transfer, const uav
 }
 
 /*
-handle parameter executeopcode request
+handle parameter execute opcode request
 */
-void CanRotorNode::handle_param_ExecuteOpcode(const CanardRxTransfer& transfer, const uavcan_protocol_param_ExecuteOpcodeRequest& req)
+void CanRotorNode::handleParamExecuteOpcode(const CanardRxTransfer& transfer, const uavcan_protocol_param_ExecuteOpcodeRequest& req)
 {
     if (req.opcode == UAVCAN_PROTOCOL_PARAM_EXECUTEOPCODE_REQUEST_OPCODE_ERASE) {
         // here is where you would reset all parameters to defaults
@@ -217,9 +212,9 @@ void CanRotorNode::handle_param_ExecuteOpcode(const CanardRxTransfer& transfer, 
 /*
 handle DNA allocation responses
 */
-void CanRotorNode::handle_DNA_Allocation(const CanardRxTransfer& transfer, const uavcan_protocol_dynamic_node_id_Allocation& msg)
+void CanRotorNode::handleDNAAllocation(const CanardRxTransfer& transfer, const uavcan_protocol_dynamic_node_id_Allocation& msg)
 {
-    if (canard_iface.get_node_id() != CANARD_BROADCAST_NODE_ID) {
+    if (_canard_iface.get_node_id() != CANARD_BROADCAST_NODE_ID) {
         // already allocated
         return;
     }
@@ -256,7 +251,7 @@ void CanRotorNode::handle_DNA_Allocation(const CanardRxTransfer& transfer, const
         printf("Matching allocation response: %d\n", msg.unique_id.len);
     } else {
         // Allocation complete - copying the allocated node ID from the message
-        canard_iface.set_node_id(msg.node_id);
+        _canard_iface.set_node_id(msg.node_id);
         printf("Node ID allocated: %d\n", msg.node_id);
     }
 }
@@ -420,10 +415,10 @@ void CanardInterface::init(const char *interface_name)
 /*
 Initializing the CAN backend driver; in this example we're using SocketCAN
 */
-void CanRotorNode::start_node(const char *interface_name)
+void CanRotorNode::startNode(const char *interface_name)
 {
     // init the interface
-    canard_iface.init(interface_name);
+    _canard_iface.init(interface_name);
 
     /*
     Run the main loop.
@@ -432,12 +427,12 @@ void CanRotorNode::start_node(const char *interface_name)
     uint64_t next_50hz_service_at = micros64();
 
     while (true) {
-        canard_iface.process(1);
+        _canard_iface.process(1);
 
         const uint64_t ts = micros64();
 
         // see if we are still doing DNA
-        if (canard_iface.get_node_id() == CANARD_BROADCAST_NODE_ID) {
+        if (_canard_iface.get_node_id() == CANARD_BROADCAST_NODE_ID) {
             // we're still waiting for a DNA allocation of our node ID
             if (millis32() > DNA.send_next_node_id_allocation_request_at_ms) {
                 requestDNA();
@@ -456,9 +451,29 @@ void CanRotorNode::start_node(const char *interface_name)
     }
 }
 
+static int CanRotorNode::taskSpawn() {
+    //TODO Make constructor
+        instance = new CanRotorNode();
+
+        if (instance) {
+            _instance = instance;
+            _task_id = getpid();
+            instance->init();
+            instance->startNode();
+
+              _instance = nullptr;
+            _task_id = -1;
+            return true;
+        } else {
+            printf("alloc failed");
+        }
+
+        delete instance;
+        _object = nullptr;
+        _task_id = -1;
+
+        return false;
+}
 // declare our ESC node
 static CanRotorNode node;
 
-} // namespace rotor
-
-} // namespace snow

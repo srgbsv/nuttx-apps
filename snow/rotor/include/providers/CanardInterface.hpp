@@ -28,11 +28,6 @@
 
 #include <dronecan_msgs.h>
 
-namespace snow 
-{
-namespace rotor
-{
-
 class CanardInterface : public Canard::Interface 
 {
     
@@ -70,8 +65,3 @@ private:
     SocketCANInstance socketcan;
 
 };
-
-} // namespace rotor
-
-} // namespace snow
-
