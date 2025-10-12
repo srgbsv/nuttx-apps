@@ -11,16 +11,18 @@
 class CanController
 {
 public:
-  CanController::run(const char * interface_name);
+  int run(const char * interface_name);
+
+  CanController(std::shared_ptr<State> state);
   ~CanController();
 
   static int stop();
-  int run();
 
   static bool _is_running;
   static bool _need_stop;
 private:
   // Private members
   CanController() {};
+  CanController(const CanController &controller) {};
   std::shared_ptr<State> _state;
 };

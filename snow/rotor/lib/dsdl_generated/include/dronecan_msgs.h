@@ -1,4 +1,5 @@
 #pragma once
+#define DRONECAN_CXX_WRAPPERS 1
 #include "ardupilot.equipment.power.BatteryCells.h"
 #include "ardupilot.equipment.power.BatteryContinuous.h"
 #include "ardupilot.equipment.power.BatteryInfoAux.h"

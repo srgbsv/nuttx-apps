@@ -3,9 +3,10 @@
 # language manual at http://www.kernel.org/doc/Documentation/kbuild/kconfig-language.txt
 #
 
-config SNOW_ROTOR
+config SNOW_ROTOR_APP
 	tristate "Rotor control daemon"
 	default n
+	depends on HAVE_CXX
 	---help---
 		Enable the rotor control daemon.
 

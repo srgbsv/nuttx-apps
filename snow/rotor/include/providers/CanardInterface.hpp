@@ -9,16 +9,16 @@
 #include <errno.h>
 #include <stdbool.h>
 
-// include the canard C++ APIs
+// include the base canard API
+#include <canard.h>
 #include <canard/publisher.h>
 #include <canard/subscriber.h>
 #include <canard/service_client.h>
 #include <canard/service_server.h>
 #include <canard/handler_list.h>
 #include <canard/transfer_object.h>
+#include <canard/interface.h>
 
-// include the base canard API
-#include <canard.h>
 
 // we are using the socketcan driver
 #include <drivers/socketcan/socketcan.h>
@@ -30,11 +30,13 @@
 
 class CanardInterface : public Canard::Interface 
 {
+    friend class CanRotorNode;
+    
+     CanardInterface(uint8_t iface_index) :
+        Interface(iface_index) {}
     
 public:
-    CanardInterface(uint8_t iface_index) :
-        Interface(iface_index) {}
-        
+    
     void init(const char *interface_name);
 
     // implement required interface functions
@@ -52,12 +54,17 @@ public:
                                     uint8_t source_node_id);
 
     uint8_t get_node_id() const override { return canard.node_id; }
-    void setNodeId(uint8_t node_id) {
+
+    void set_node_id(uint8_t node_id) {
         canardSetLocalNodeID(&canard, node_id);
     }
 
+    ~CanardInterface() {
+        socketcanClose(&socketcan);
+    }
+
 private:
-    uint8_t memory_pool[2048];
+    uint8_t memory_pool[4096];
     CanardInstance canard;
     CanardTxTransfer tx_transfer;
 

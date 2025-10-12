@@ -6,31 +6,18 @@
 #include <fcntl.h>
 #include <syslog.h>
 
-#include "controllers/MainController.hpp"
 #include "Config.hpp"
-
-
-//
-// Created by sergey on 21.07.24.
-//
-
-#include <sys/ioctl.h>
-#include <fcntl.h>
-#include <syslog.h>
-
-#include "Config.h"
+#include "Logging.hpp"
 #include "controllers/MainController.hpp"
 
-
-pid_t MainController::_task_id = -1;
 pthread_mutex_t MainController::_thrower_mutex = PTHREAD_MUTEX_INITIALIZER;
-MainController* MainController::_object = nullptr;
-bool MainController::_should_exit = false;
+std::unique_ptr<MainController> MainController::_instance; 
+pid_t MainController::_task_id = -1;
+bool MainController::_task_should_exit = false;
 
 
 MainController::~MainController () {
     pthread_mutex_destroy (&_thrower_mutex);
-    _body_controller.stop();
 }
 
 int MainController::stopCommand () {
@@ -38,10 +25,9 @@ int MainController::stopCommand () {
     lockModule ();
 
     if (isRunning ()) {
-        MainController* object = _object;
 
-        if (object) {
-            object->requestStop ();
+        if (_instance) {
+            _instance->requestStop ();
 
             unsigned int i = 0;
 
@@ -51,14 +37,13 @@ int MainController::stopCommand () {
                 lockModule ();
 
                 if (++i > 500 && _task_id != -1) { // wait at most 5 sec
-                    printf ("timeout, forcing stop");
+                    snowinfo ("timeout, forcing stop");
 
                     task_delete (_task_id);
 
                     _task_id = -1;
 
-                    delete _object;
-                    _object = nullptr;
+                    _instance.reset();
 
                     ret = -1;
                     break;
@@ -73,7 +58,7 @@ int MainController::stopCommand () {
             _task_id = -1;
         }
     } else {
-        printf ("Already stopped\n");
+        snowinfo ("Already stopped\n");
     }
 
     unlockModule ();
@@ -81,37 +66,32 @@ int MainController::stopCommand () {
 }
 
 int MainController::startMain (int argc, char** argv) {
-    printf ("startMain\n");
-    /*if (argc <= 1 || strcmp (argv[1], "-h") == 0 || strcmp (argv[1], "help") == 0
+    snowdebug ("Start main\n");
+    if (argc <= 1 || strcmp (argv[1], "-h") == 0 || strcmp (argv[1], "help") == 0
         || strcmp (argv[1], "info") == 0 || strcmp (argv[1], "usage") == 0) {
-#ifdef HOLDER_DEBUG
-        printf("Command: PrintUsage\n");
-#endif
-        return MainController::printUsage ();
-    }*/
+        MainController::printUsage ();
+        return 0;
+    }
 
     if (strcmp (argv[1], "start") == 0) {
-#ifdef HOLDER_DEBUG
-        printf("Command: Start\n");
-#endif
+        snowdebug("Command: Start\n");
         return startCommand (argc - 1, argv + 1);
     }
 
     if (strcmp (argv[1], "stop") == 0) {
-#ifdef HOLDER_DEBUG
-        printf("Command: Stop\n");
-#endif
+        snowdebug("Command: Stop\n");
+
         return MainController::stopCommand();
     }
 
     if (strcmp (argv[1], "status") == 0) {
-#ifdef HOLDER_DEBUG
-        printf("Command: Status\n");
-#endif
+        snowdebug("Command: Status\n");
+
         return MainController::statusCommand();
     }
 
-    return MainController::startCommand(argc -1, argv + 1);
+    printUsage();
+    return 0;
 }
 
 
@@ -124,18 +104,25 @@ int MainController::startCommand (int argc, char* argv[]) {
         printf ("Task already running");
 
     } else {
-#ifdef HOLDER_DEBUG
-        printf ("Try to spawn task. Priority: %d", HOLDER_TASK_PRIORITY);
+#ifdef ROTOR_DEBUG
+        printf ("Try to spawn task. Priority: %d", ROTOR_TASK_PRIORITY);
 #endif
-        ret = task_create("Holder", HOLDER_TASK_PRIORITY, HOLDER_TASK_STACK_SIZE, MainController::taskSpawn, argv);
+                
+        ret = task_create("ROTOR", ROTOR_TASK_PRIORITY, ROTOR_TASK_STACK_SIZE, MainController::taskSpawn, argv);
 
         if (ret < 0) {
             printf ("Task start failed (%i)", ret);
         } else {
-#ifdef HOLDER_DEBUG
+#ifdef ROTOR_DEBUG
             printf ("Task spawned.  (%i)", ret);
 #endif
         }
+
+        /*ret = CanRotorNode::startNode("can0");
+        if (ret < 0) {
+            snowerror("Can`t init CAN. Stopping...");
+            return -1;
+        }*/
     }
 
     unlockModule ();
@@ -146,16 +133,29 @@ int MainController::statusCommand () {
     int ret = -1;
     lockModule ();
 
-    if (isRunning () && _object != nullptr) {
-        MainController* object = _object;
-        ret                    = object->printStatus ();
+    if (isRunning () && _instance) {
+        ret = _instance->printStatus ();
 
     } else {
-        printf ("not running\n");
+        snowinfo ("not running\n");
     }
 
     unlockModule ();
     return ret;
+}
+
+
+bool MainController::taskShouldExit () {
+    return _task_should_exit;
+}
+
+void MainController::requestStop() {
+    _task_should_exit = true;
+}
+
+
+bool MainController::isRunning () {
+    return _task_id != -1;
 }
 
 int MainController::printStatus () {
@@ -164,78 +164,70 @@ int MainController::printStatus () {
 }
 
 int MainController::taskSpawn (int argc, char** argv) {
-    {
-        //TODO Make constructor
-        MainController *instance = new MainController(argc, argv);
+    //TODO Make constructor
+    std::unique_ptr<MainController> _instance = std::make_unique<MainController>(argc, argv);
 
-        if (instance) {
-            _object = instance;
-            _task_id = getpid();
-            instance->init();
-            instance->run();
+    if (_instance) {
+        _task_id = getpid();
+        snowdebug("Task id: %d", _task_id);
 
-            delete instance;
-            _object = nullptr;
-            _task_id = -1;
-            return true;
-        } else {
-            printf("alloc failed");
-        }
+        bool res = _instance->init();
+        _instance->run();
 
-        delete instance;
-        _object = nullptr;
+        _instance.reset();
         _task_id = -1;
-
-        return false;
+        return 0;
+    } else {
+        printf("alloc failed");
     }
-}
 
-bool MainController::checkState() {
-#ifdef HOLDER_DEBUG
-    syslog (LOG_DEBUG, "CheckState()");
-#endif
-    auto lift_value = _input_controller.getLiftValueRaw();
-#ifdef HOLDER_DEBUG
-    syslog(LOG_DEBUG, "MainController::checkState: New state: lift_value=[%d]\n",    lift_value);
-#endif
-    return true;
-}
+    _instance.reset();
+    _task_id = -1;
 
-bool MainController::updateState() {
-#ifdef HOLDER_DEBUG
-    syslog (LOG_DEBUG, "updateState()");
-#endif
-
-    auto lift_value = _input_controller.getLiftValue();
-#ifdef HOLDER_DEBUG
-    syslog(LOG_DEBUG, "MainController::updateState: New state: lift_value=[%d]\n",    lift_value);
-#endif
-    return _body_controller.setLift (lift_value);
+    return -1;
+    
 }
 
 void MainController::run() {
-    while (!shouldExit()) {
+    while (!taskShouldExit()) {
         // loop as the wait may be interrupted by a signal
-        updateState();
-        //checkState();
-        usleep (500);
+        //printf("Tick...\n");
+        usleep (10000);
     }
 
-    exitAndClean();
-}
-
-MainController::MainController (int argc, char** argv) {
+    initStop();
 }
 
 bool MainController::init() {
-    _input_controller.init(_lift_enable_in);
-    _body_controller.init(_lift_up_gpio, _lift_down_gpio);
+    printf("Initing...\n");
+    int ret = CanRotorNode::startNode(iface_name);
+    if (ret < 0) {
+        snowerror("Can`t init CAN. Stopping...");
+        return false;
+    }
     return true;
 }
 
-void MainController::exitAndClean() {
-#ifdef HOLDER_DEBUG
-    printf("Exit end clean");
-#endif
-    _body_controller.stop();
+bool MainController::initStop() {
+    snowinfo("Stop initing\n");
+}
+
+void MainController::printUsage() {
+}
+
+void MainController::printUsage(const char *reason) {
+    if (reason) {
+        printf ("%s\n", reason);
+    }
+
+    printUsage();
+}
+
+void MainController::customCommand(int argc, char *argv[]) {
+    return printUsage("unknown command");
+}
+
+MainController::MainController (int argc, char* argv[])
+    : _state(new State()) {
+
 }

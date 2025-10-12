@@ -1,106 +1,39 @@
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#include <syslog.h>
+
 #include "providers/CanRotorNode.hpp"
 #include "tools/SystemTools.hpp"
 #include "Logging.hpp"
 
-// convenience macros
-#define MIN(a,b) ((a)<(b)?(a):(b))
-#define C_TO_KELVIN(temp) (temp + 273.15f)
-#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
-
-
 /*
-a set of parameters to present to the user. In this example we don't
-actually save parameters, this is just to show how to handle the
-parameter protocool
-*/
-/*CanRotorNode::parameter CanRotorNode::parameters[] = {
-    { "CAN_NODE", UAVCAN_PROTOCOL_PARAM_VALUE_INTEGER_VALUE, MY_NODE_ID, 0, 127 },
-    { "MyPID_P", UAVCAN_PROTOCOL_PARAM_VALUE_REAL_VALUE, 1.2, 0.1, 5.0 },
-    { "MyPID_I", UAVCAN_PROTOCOL_PARAM_VALUE_REAL_VALUE, 1.35, 0.1, 5.0 },
-    { "MyPID_D", UAVCAN_PROTOCOL_PARAM_VALUE_REAL_VALUE, 0.025, 0.001, 1.0 },
-};*/
-
-
-bool CanardInterface::broadcast(const Canard::Transfer &bcast_transfer) {
-    tx_transfer = {
-        .transfer_type = bcast_transfer.transfer_type,
-        .data_type_signature = bcast_transfer.data_type_signature,
-        .data_type_id = bcast_transfer.data_type_id,
-        .inout_transfer_id = bcast_transfer.inout_transfer_id,
-        .priority = bcast_transfer.priority,
-        .payload = (const uint8_t*)bcast_transfer.payload,
-        .payload_len = uint16_t(bcast_transfer.payload_len),
-#if CANARD_ENABLE_CANFD
-        .canfd = bcast_transfer.canfd,
-#endif
-#if CANARD_ENABLE_DEADLINE
-        .deadline_usec = micros64() + (bcast_transfer.timeout_ms * 1000),
-#endif
-#if CANARD_MULTI_IFACE
-        .iface_mask = uint8_t((1<<num_ifaces) - 1),
-#endif
-    };
-    // do canard broadcast
-    bool success = canardBroadcastObj(&canard, &tx_transfer) > 0;
-    return success;
-}
-
-bool CanardInterface::request(uint8_t destination_node_id, const Canard::Transfer &req_transfer) {
-    tx_transfer = {
-        .transfer_type = req_transfer.transfer_type,
-        .data_type_signature = req_transfer.data_type_signature,
-        .data_type_id = req_transfer.data_type_id,
-        .inout_transfer_id = req_transfer.inout_transfer_id,
-        .priority = req_transfer.priority,
-        .payload = (const uint8_t*)req_transfer.payload,
-        .payload_len = uint16_t(req_transfer.payload_len),
-#if CANARD_ENABLE_CANFD
-        .canfd = req_transfer.canfd,
-#endif
-#if CANARD_ENABLE_DEADLINE
-        .deadline_usec = micros64() + (req_transfer.timeout_ms * 1000),
-#endif
-#if CANARD_MULTI_IFACE
-        .iface_mask = uint8_t((1<<num_ifaces) - 1),
-#endif
-    };
-    // do canard request
-    return canardRequestOrRespondObj(&canard, destination_node_id, &tx_transfer) > 0;
-}
-
-bool CanardInterface::respond(uint8_t destination_node_id, const Canard::Transfer &res_transfer) {
-    tx_transfer = {
-        .transfer_type = res_transfer.transfer_type,
-        .data_type_signature = res_transfer.data_type_signature,
-        .data_type_id = res_transfer.data_type_id,
-        .inout_transfer_id = res_transfer.inout_transfer_id,
-        .priority = res_transfer.priority,
-        .payload = (const uint8_t*)res_transfer.payload,
-        .payload_len = uint16_t(res_transfer.payload_len),
-#if CANARD_ENABLE_CANFD
-        .canfd = res_transfer.canfd,
-#endif
-#if CANARD_ENABLE_DEADLINE
-        .deadline_usec = micros64() + (res_transfer.timeout_ms * 1000),
-#endif
-#if CANARD_MULTI_IFACE
-        .iface_mask = uint8_t((1<<num_ifaces) - 1),
-#endif
-    };
-    // do canard respond
-    return canardRequestOrRespondObj(&canard, destination_node_id, &tx_transfer) > 0;
-}
+  declare heads of handler and transfer lists
+ */
+DEFINE_HANDLER_LIST_HEADS();
+DEFINE_TRANSFER_OBJECT_HEADS();
 
 // convenience macros
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #define C_TO_KELVIN(temp) (temp + 273.15f)
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
+
+
+pid_t CanRotorNode::_task_id = -1;
+bool CanRotorNode::_should_exit = false;
+std::unique_ptr<CanRotorNode> CanRotorNode::_instance;
+std::shared_ptr<State> CanRotorNode::_state;
+
+void CanRotorNode::handleGetNodeStatus(const CanardRxTransfer& transfer, const uavcan_protocol_NodeStatus& info)
+{
+    printf("Handled GetNodeStatus\n");
+}
 
 /*
 handle a GetNodeInfo request
 */
-void CanRotorNode::handleGetNodeInfo(const CanardRxTransfer& transfer, const uavcan_protocol_GetNodeInfoRequest& req)
+/*void CanRotorNode::handleGetNodeInfo(const CanardRxTransfer& transfer, const uavcan_protocol_GetNodeInfoRequest& req)
 {
+    printf("Handled GetNodeInfo request\n");
     uavcan_protocol_GetNodeInfoResponse node_info_rsp {};
 
     // fill in node name
@@ -116,87 +49,39 @@ void CanRotorNode::handleGetNodeInfo(const CanardRxTransfer& transfer, const uav
     node_info_rsp.status.uptime_sec = SystemTools::millis32() / 1000UL;
 
     node_info_server.respond(transfer, node_info_rsp);
-}
+}*/
 
 /*
 handle a ESC RawCommand request
 */
-void CanRotorNode::handleRawCommand(const CanardRxTransfer& transfer, const uavcan_equipment_esc_RawCommand& cmd)
+/*void CanRotorNode::handleRawCommand(const CanardRxTransfer& transfer, const uavcan_equipment_esc_RawCommand& cmd)
 {
-    // remember the demand for the ESC status output
-    const uint8_t num_throttles = MIN(cmd.cmd.len, NUM_ESCS);
-    const uint64_t tnow = SystemTools::micros64();
-    for (uint8_t i=0; i<num_throttles; i++) {
-        // convert throttle to -1.0 to 1.0 range
-        escs[i].throttle = cmd.cmd.data[i]/8192.0;
-        escs[i].last_update_us = tnow;
-    }
+    printf("Handled RAW command\n");
+}*/
+
+/*
+handle a Actuators RAWCommand
+*/
+void CanRotorNode::handleActuatorListCommand(const CanardRxTransfer& transfer, const uavcan_equipment_actuator_ArrayCommand& cmd)
+{
+    printf("Handle actuator list command\n");
 }
 
 /*
 handle parameter GetSet request
 */
-void CanRotorNode::handleParamGetSet(const CanardRxTransfer& transfer, const uavcan_protocol_param_GetSetRequest& req)
+/*void CanRotorNode::handleParamGetSet(const CanardRxTransfer& transfer, const uavcan_protocol_param_GetSetRequest& req)
 {
-    struct parameter *p = nullptr;
-    if (req.name.len != 0) {
-        for (uint16_t i=0; i<ARRAY_SIZE(parameters); i++) {
-            if (req.name.len == strlen(parameters[i].name) &&
-                strncmp((const char *)req.name.data, parameters[i].name, req.name.len) == 0) {
-                p = &parameters[i];
-                break;
-            }
-        }
-    } else if (req.index < ARRAY_SIZE(parameters)) {
-        p = &parameters[req.index];
-    }
-    if (p != nullptr && req.name.len != 0 && req.value.union_tag != UAVCAN_PROTOCOL_PARAM_VALUE_EMPTY) {
-        /*
-        this is a parameter set command. The implementation can
-        either choose to store the value in a persistent manner
-        immediately or can instead store it in memory and save to permanent storage on a
-        */
-        switch (p->type) {
-        case UAVCAN_PROTOCOL_PARAM_VALUE_INTEGER_VALUE:
-            p->value = req.value.integer_value;
-            break;
-        case UAVCAN_PROTOCOL_PARAM_VALUE_REAL_VALUE:
-            p->value = req.value.real_value;
-            break;
-        default:
-            return;
-        }
-    }
-
-    /*
-    for both set and get we reply with the current value
-    */
-    uavcan_protocol_param_GetSetResponse pkt {};
-
-    if (p != NULL) {
-        pkt.value.union_tag = p->type;
-        switch (p->type) {
-        case UAVCAN_PROTOCOL_PARAM_VALUE_INTEGER_VALUE:
-            pkt.value.integer_value = p->value;
-            break;
-        case UAVCAN_PROTOCOL_PARAM_VALUE_REAL_VALUE:
-            pkt.value.real_value = p->value;
-            break;
-        default:
-            return;
-        }
-        pkt.name.len = strlen(p->name);
-        strcpy((char *)pkt.name.data, p->name);
-    }
-
-    param_server.respond(transfer, pkt);
-}
+    printf("Handle param GetSet\n");
+    return;
+}*/
 
 /*
 handle parameter execute opcode request
 */
-void CanRotorNode::handleParamExecuteOpcode(const CanardRxTransfer& transfer, const uavcan_protocol_param_ExecuteOpcodeRequest& req)
+/*void CanRotorNode::handleParamExecuteOpcode(const CanardRxTransfer& transfer, const uavcan_protocol_param_ExecuteOpcodeRequest& req)
 {
+    printf("Handle param ExecuteOpcode\n");
     if (req.opcode == UAVCAN_PROTOCOL_PARAM_EXECUTEOPCODE_REQUEST_OPCODE_ERASE) {
         // here is where you would reset all parameters to defaults
     }
@@ -207,12 +92,12 @@ void CanRotorNode::handleParamExecuteOpcode(const CanardRxTransfer& transfer, co
     uavcan_protocol_param_ExecuteOpcodeResponse pkt {};
     pkt.ok = true;
     param_opcode_server.respond(transfer, pkt);
-}
+}*/
 
 /*
 handle DNA allocation responses
 */
-void CanRotorNode::handleDNAAllocation(const CanardRxTransfer& transfer, const uavcan_protocol_dynamic_node_id_Allocation& msg)
+/*void CanRotorNode::handleDNAAllocation(const CanardRxTransfer& transfer, const uavcan_protocol_dynamic_node_id_Allocation& msg)
 {
     if (_canard_iface.get_node_id() != CANARD_BROADCAST_NODE_ID) {
         // already allocated
@@ -221,7 +106,7 @@ void CanRotorNode::handleDNAAllocation(const CanardRxTransfer& transfer, const u
 
     // Rule C - updating the randomized time interval
     DNA.send_next_node_id_allocation_request_at_ms =
-        millis32() + UAVCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_MIN_REQUEST_PERIOD_MS +
+        SystemTools::millis32() + UAVCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_MIN_REQUEST_PERIOD_MS +
         (random() % UAVCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_MAX_FOLLOWUP_DELAY_MS);
 
     if (transfer.source_node_id == CANARD_BROADCAST_NODE_ID) {
@@ -232,7 +117,7 @@ void CanRotorNode::handleDNAAllocation(const CanardRxTransfer& transfer, const u
 
     // Obtaining the local unique ID
     uint8_t my_unique_id[sizeof(msg.unique_id.data)];
-    getUniqueID(my_unique_id);
+    SystemTools::getUniqueID(my_unique_id);
 
     // Matching the received UID against the local one
     if (memcmp(msg.unique_id.data, my_unique_id, msg.unique_id.len) != 0) {
@@ -254,21 +139,21 @@ void CanRotorNode::handleDNAAllocation(const CanardRxTransfer& transfer, const u
         _canard_iface.set_node_id(msg.node_id);
         printf("Node ID allocated: %d\n", msg.node_id);
     }
-}
+}*/
 
 /*
 ask for a dynamic node allocation
 */
-void CanRotorNode::request_DNA()
+/*void CanRotorNode::requestDNA()
 {
-    const uint32_t now = millis32();
+    const uint32_t now = SystemTools::millis32();
 
     DNA.send_next_node_id_allocation_request_at_ms =
         now + UAVCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_MIN_REQUEST_PERIOD_MS +
         (random() % UAVCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_MAX_FOLLOWUP_DELAY_MS);
 
     uint8_t my_unique_id[16];
-    getUniqueID(my_unique_id);
+    SystemTools::getUniqueID(my_unique_id);
     
     // send allocation message
     uavcan_protocol_dynamic_node_id_Allocation req {};
@@ -290,18 +175,20 @@ void CanRotorNode::request_DNA()
     DNA.node_id_allocation_unique_id_offset = 0;
 
     allocation_pub.broadcast(req);
-}
+}*/
 
 /*
 send the 1Hz NodeStatus message. This is what allows a node to show
 up in the DroneCAN GUI tool and in the flight controller logs
 */
-void CanRotorNode::send_NodeStatus(void)
+void CanRotorNode::sendNodeStatus(void)
 {
+    snowinfo("Send node status\n");
+
     node_status_msg.health = UAVCAN_PROTOCOL_NODESTATUS_HEALTH_OK;
     node_status_msg.mode = UAVCAN_PROTOCOL_NODESTATUS_MODE_OPERATIONAL;
     node_status_msg.sub_mode = 0;
-    node_status_msg.uptime_sec = millis32() / 1000UL;
+    node_status_msg.uptime_sec = SystemTools::millis32() / 1000UL;
 
     node_status.broadcast(node_status_msg);
 }
@@ -314,131 +201,59 @@ void CanRotorNode::process1HzTasks(uint64_t timestamp_usec)
     /*
     Transmit the node status message
     */
-    send_NodeStatus();
+    sendNodeStatus();
 }
 
-/*
-send ESC status at 50Hz
-*/
-void CanRotorNode::send_ESCStatus(void)
-{
-    // send a separate status packet for each ESC
-    for (uint8_t i=0; i<NUM_ESCS; i++) {
-        uavcan_equipment_esc_Status pkt {};
+void CanRotorNode::sendRotorStatus(void) {
 
-        // make up some synthetic status data
-        pkt.error_count = 0;
-        pkt.voltage = 16.8 - 2.0 * escs[i].throttle;
-        pkt.current = 20 * escs[i].throttle;
-        pkt.temperature = C_TO_KELVIN(25.0);
-        pkt.rpm = 10000 * escs[i].throttle;
-        pkt.power_rating_pct = 100.0 * escs[i].throttle;
-
-        esc_status.broadcast(pkt);
-    }
 }
 
-
-/*
-Transmits all frames from the TX queue, receives up to one frame.
-*/
-void CanardInterface::process(uint32_t timeout_msec)
+int CanRotorNode::startNode(const char* iface_name)
 {
-    // Transmitting
-    for (const CanardCANFrame* txf = NULL; (txf = canardPeekTxQueue(&canard)) != NULL;) {
-        const int16_t tx_res = socketcanTransmit(&socketcan, txf, 0);
-        if (tx_res != 0) {
-            canardPopTxQueue(&canard);
-        }
+    if (_task_id != -1) {
+        snowerror("CanNode already started. Task Id: %d", _task_id);
+        return -1;
     }
+    //_state = state;
 
-    // Receiving
-    const uint32_t start_ms = millis32();
-    while (millis32() - start_ms < timeout_msec) {
-        CanardCANFrame rx_frame;
-        const int16_t rx_res = socketcanReceive(&socketcan, &rx_frame, timeout_msec);
-        if (rx_res > 0) {
-            canardHandleRxFrame(&canard, &rx_frame, micros64());
-        }
-    }
-}
+    /*char** argv = new char*[2];
+    argv[0] = strdup("CAN");
+    argv[1] = strdup("can0");*/
+    
+    int ret = task_create("ROTOR_CAN", ROTOR_CAN_TASK_PRIORITY, ROTOR_CAN_TASK_STACK_SIZE, CanRotorNode::taskSpawn, NULL);
 
-/*
-handle an incoming message
-*/
-void CanardInterface::onTransferReceived(CanardInstance* ins, CanardRxTransfer* transfer)
-{
-    CanardInterface* iface = (CanardInterface*) ins->user_reference;
-    iface->handle_message(*transfer);
-}
+    /*delete[] argv[0];
+    delete[] argv[1];
+    delete[] argv;*/
 
-/*
-check if we want the message. This is based on what we have subscribed to
-*/
-bool CanardInterface::shouldAcceptTransfer(const CanardInstance* ins,
-                                uint64_t* out_data_type_signature,
-                                uint16_t data_type_id,
-                                CanardTransferType transfer_type,
-                                uint8_t source_node_id)
-{
-    CanardInterface* iface = (CanardInterface*)ins->user_reference;
-    return iface->accept_message(data_type_id, transfer_type, *out_data_type_signature);
-}
-
-/*
-Initializing the Libcanard instance.
-*/
-void CanardInterface::init(const char *interface_name)
-{
-    int16_t res = socketcanInit(&socketcan, interface_name);
-    if (res < 0) {
-        (void)fprintf(stderr, "Failed to open CAN iface '%s'\n", interface_name);
-        exit(1);
-    }
-
-    // init canard object
-    canardInit(&canard,
-            memory_pool,
-            sizeof(memory_pool),
-            onTransferReceived,
-            shouldAcceptTransfer,
-            this);
-
-    // set node ID if not doing DNA
-    if (MY_NODE_ID > 0) {
-        canardSetLocalNodeID(&canard, MY_NODE_ID);
-    } else {
-        printf("Waiting for DNA node ID allocation\n");
-    }
+    return ret;
 }
 
 /*
 Initializing the CAN backend driver; in this example we're using SocketCAN
 */
-void CanRotorNode::startNode(const char *interface_name)
+void CanRotorNode::run()
 {
-    // init the interface
-    _canard_iface.init(interface_name);
-
     /*
     Run the main loop.
     */
-    uint64_t next_1hz_service_at = micros64();
-    uint64_t next_50hz_service_at = micros64();
+    uint64_t next_1hz_service_at = SystemTools::micros64();
+    uint64_t next_50hz_service_at = SystemTools::micros64();
 
-    while (true) {
-        _canard_iface.process(1);
 
-        const uint64_t ts = micros64();
+    while (!shouldExit()) {
+        _canard_iface.process(100);
+
+        const uint64_t ts = SystemTools::micros64();
 
         // see if we are still doing DNA
-        if (_canard_iface.get_node_id() == CANARD_BROADCAST_NODE_ID) {
+        /*if (_canard_iface.get_node_id() == CANARD_BROADCAST_NODE_ID) {
             // we're still waiting for a DNA allocation of our node ID
-            if (millis32() > DNA.send_next_node_id_allocation_request_at_ms) {
+            if (SystemTools::millis32() > DNA.send_next_node_id_allocation_request_at_ms) {
                 requestDNA();
             }
             continue;
-        }
+        }*/
 
         if (ts >= next_1hz_service_at) {
             next_1hz_service_at += 1000000ULL;
@@ -446,34 +261,43 @@ void CanRotorNode::startNode(const char *interface_name)
         }
         if (ts >= next_50hz_service_at) {
             next_50hz_service_at += 1000000ULL/50U;
-            sendRotorStatus();
+
+            //sendRotorStatus();
         }
     }
 }
 
-static int CanRotorNode::taskSpawn() {
-    //TODO Make constructor
-        instance = new CanRotorNode();
+/*
+Initializing the Socket CAN backend driver
+*/
+int CanRotorNode::init(const char * iface_name) {
+    snowinfo("Canard Iface init %s\n", iface_name);
+    // init the interface
+    _canard_iface.init(iface_name);
+    _canard_iface.set_node_id(ROTOR_CAN_NODE_ID);
 
-        if (instance) {
-            _instance = instance;
-            _task_id = getpid();
-            instance->init();
-            instance->startNode();
-
-              _instance = nullptr;
-            _task_id = -1;
-            return true;
-        } else {
-            printf("alloc failed");
-        }
-
-        delete instance;
-        _object = nullptr;
-        _task_id = -1;
-
-        return false;
+    return 0;
 }
-// declare our ESC node
-static CanRotorNode node;
 
+int CanRotorNode::taskSpawn(int argc, char** argv) {
+    //TODO Make constructor
+    _instance = std::make_unique<CanRotorNode>();
+    
+    if (_instance) {
+        _task_id = getpid();
+        printf("Can task spawn\n");
+        _instance->init("can0");
+        _instance->run();
+
+        _instance.reset();
+        _task_id = -1;
+        return 0;
+    } else {
+        printf("alloc failed");
+    }
+
+    _instance.reset();
+    _task_id = -1;
+
+    return -1;
+}

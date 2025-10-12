@@ -4,3 +4,10 @@ CanState State::getCanState()
 {
     return _can_state;
 }
+
+State::State () {
+}
+
+State::~State() {
+    
+}

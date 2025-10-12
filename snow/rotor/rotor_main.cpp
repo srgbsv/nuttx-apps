@@ -3,18 +3,16 @@
  ****************************************************************************/
 
 #include <nuttx/config.h>
-#include <iostream>
 #include <unistd.h>
-#include "MainController.hpp"
+
+#include "controllers/MainController.hpp"
 
 extern "C" int main(int argc, char *argv[])
 {
-
-  extern "C" int main(int argc, char *argv[])
-  {
-    MainController::startMain(argc, argv);
-    return 0;
+  printf("Start rotor programm\n");
+  int ret = MainController::startMain(argc, argv);
+  if (ret < 0) {
+      printf("Rotor start failed\n");
   }
-
   return 0;
 }
