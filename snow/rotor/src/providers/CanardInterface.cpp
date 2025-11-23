@@ -1,15 +1,12 @@
 #include "tools/SystemTools.hpp"
 #include "providers/CanardInterface.hpp"
+#include "Config.hpp"
+#include "Logging.hpp"
 
 /*
   in this example we will use dynamic node allocation if MY_NODE_ID is zero
  */
 #define MY_NODE_ID 22
-
-/*
-  our preferred node ID if nobody else has it
- */
-#define PREFERRED_NODE_ID 73
 
 /*
 Transmits all frames from the TX queue, receives up to one frame.
@@ -29,7 +26,10 @@ void CanardInterface::process(uint32_t timeout_msec) {
         CanardCANFrame rx_frame;
         const int16_t rx_res = socketcanReceive(&socketcan, &rx_frame, timeout_msec);
         if (rx_res > 0) {
-            canardHandleRxFrame(&canard, &rx_frame, SystemTools::micros64());
+            int16_t ret = canardHandleRxFrame(&canard, &rx_frame, SystemTools::micros64());
+            if (ret < 0) {
+                snowerror("canardHandleRxFrame failed: %d\n", ret);
+            }
         }
     }
 }
@@ -38,7 +38,6 @@ handle an incoming message
 */
 void CanardInterface::onTransferReceived(CanardInstance* ins, CanardRxTransfer* transfer)
 {
-    printf("onTransferReceived: ID %d from node %d\n", transfer->data_type_id, transfer->source_node_id);
     CanardInterface* iface = (CanardInterface*) ins->user_reference;
     iface->handle_message(*transfer);
 }
@@ -52,7 +51,6 @@ bool CanardInterface::shouldAcceptTransfer(const CanardInstance* ins,
                                 CanardTransferType transfer_type,
                                 uint8_t source_node_id)
 {
-    printf("Received message ID: %d from node %d\n", data_type_id, source_node_id);
     CanardInterface* iface = (CanardInterface*)ins->user_reference;
     return iface->accept_message(data_type_id, transfer_type, *out_data_type_signature);
 }

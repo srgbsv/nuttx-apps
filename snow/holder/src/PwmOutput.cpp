@@ -43,9 +43,8 @@ PwmOutput::~PwmOutput()
 
 bool PwmOutput::setDutyCycle (uint8_t duty)
 {
-#ifdef HOLDER_DEBUG
-    syslog(LOG_INFO, "Set duty for device %s: %d", _devpath.c_str(), duty);
-#endif
+    snowdebug(LOG_INFO, "Set duty for device %s: %d", _devpath.c_str(), duty);
+
     _pwminfo.duty = duty ? \
     b16divi(uitoub16(duty) - 1, 100) : 0;
     return updatePwmState();
@@ -53,21 +52,19 @@ bool PwmOutput::setDutyCycle (uint8_t duty)
 
 bool PwmOutput::updatePwmState()
 {
-#ifdef HOLDER_DEBUG
     syslog(LOG_INFO, "Start pulse training for device %s: freq %lu Hz, duty: %lu ", _devpath.c_str(), _pwminfo.frequency, _pwminfo.duty);
-#endif
     int ret = ioctl(_fd, PWMIOC_SETCHARACTERISTICS,
               (unsigned long)((uintptr_t)&_pwminfo));
     if (ret < 0)
     {
-        syslog(LOG_ERR, "PwmOutput: ioctl(PWMIOC_SETCHARACTERISTICS) failed: %d\n",
+        snowerror("PwmOutput: ioctl(PWMIOC_SETCHARACTERISTICS) failed: %d\n",
                errno);
         return false;
     }
     ret = ioctl(_fd, PWMIOC_START, 0);
     if (ret < 0)
     {
-        syslog(LOG_ERR, "PwmOutput: ioctl(PWMIOC_START) failed: %d\n", errno);
+        snowerror(LOG_ERR, "PwmOutput: ioctl(PWMIOC_START) failed: %d\n", errno);
         return false;
     }
     return true;

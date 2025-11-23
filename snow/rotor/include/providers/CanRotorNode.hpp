@@ -1,8 +1,8 @@
 #pragma once
 
 // system includes
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <time.h>
 #include <string.h>
 #include <assert.h>
@@ -26,7 +26,8 @@ public:
 
     static int taskSpawn(int argc, char** argv);
     //static int startNode(const char* iface_name, std::shared_ptr<State> state);
-    static int startNode(const char* iface_name);
+    static int startNode(const char* iface_name, std::shared_ptr<State> state);
+    static void stopNode();
 
     void run();
     int init(const char * iface_name);
@@ -42,24 +43,25 @@ private:
     // declare publishers for outgoing messages
     Canard::Publisher<uavcan_protocol_NodeStatus> node_status{_canard_iface};
 
+    /*void handleGetNodeStatus(const CanardRxTransfer& transfer, const uavcan_protocol_NodeStatus& cmd);
+    Canard::ObjCallback<CanRotorNode, uavcan_protocol_NodeStatus> node_status_req_cb{this, &CanRotorNode::handleGetNodeStatus};
+    Canard::Subscriber<uavcan_protocol_NodeStatus> node_status_listener{node_status_req_cb, 0};*/
+
+    void handleActuatorListCommand(const CanardRxTransfer& transfer, const uavcan_equipment_actuator_ArrayCommand& cmd);
+    Canard::ObjCallback<CanRotorNode, uavcan_equipment_actuator_ArrayCommand> actuator_list_req_cb{this, &CanRotorNode::handleActuatorListCommand};
+    Canard::Subscriber<uavcan_equipment_actuator_ArrayCommand> actuator_list_listener{actuator_list_req_cb, 0};
+
     // incoming messages
     /*void handleRawCommand(const CanardRxTransfer& transfer, const uavcan_equipment_esc_RawCommand& cmd);
     Canard::ObjCallback<CanRotorNode, uavcan_equipment_esc_RawCommand> raw_command_cb{this, &CanRotorNode::handleRawCommand};
     Canard::Subscriber<uavcan_equipment_esc_RawCommand> raw_command_listener{raw_command_cb, 0};*/
 
     // Node Info Server
-    /*void handleGetNodeInfo(const CanardRxTransfer& transfer, const uavcan_protocol_GetNodeInfoRequest& req);
+    void handleGetNodeInfo(const CanardRxTransfer& transfer, const uavcan_protocol_GetNodeInfoRequest& req);
     Canard::ObjCallback<CanRotorNode, uavcan_protocol_GetNodeInfoRequest> node_info_req_cb{this, &CanRotorNode::handleGetNodeInfo};
-    //Canard::Server<uavcan_protocol_GetNodeInfoRequest> node_info_server{_canard_iface, node_info_req_cb};
-    Canard::Subscriber<uavcan_protocol_GetNodeInfoRequest> node_info_listener{node_info_req_cb, 0};*/
+    Canard::Server<uavcan_protocol_GetNodeInfoRequest> node_info_server{_canard_iface, node_info_req_cb};
 
-    void handleGetNodeStatus(const CanardRxTransfer& transfer, const uavcan_protocol_NodeStatus& cmd);
-    Canard::ObjCallback<CanRotorNode, uavcan_protocol_NodeStatus> node_status_req_cb{this, &CanRotorNode::handleGetNodeStatus};
-    Canard::Subscriber<uavcan_protocol_NodeStatus> node_status_listener{node_status_req_cb, 0};
 
-    void handleActuatorListCommand(const CanardRxTransfer& transfer, const uavcan_equipment_actuator_ArrayCommand& cmd);
-    Canard::ObjCallback<CanRotorNode, uavcan_equipment_actuator_ArrayCommand> actuator_list_req_cb{this, &CanRotorNode::handleActuatorListCommand};
-    Canard::Subscriber<uavcan_equipment_actuator_ArrayCommand> actuator_list_listener{actuator_list_req_cb, 0};
 
     // parameter server
     /*void handleParamGetSet(const CanardRxTransfer& transfer, const uavcan_protocol_param_GetSetRequest& req);

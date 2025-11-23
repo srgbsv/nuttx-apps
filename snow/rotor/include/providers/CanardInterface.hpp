@@ -1,8 +1,8 @@
 #pragma once
 
 // system includes
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <time.h>
 #include <string.h>
 #include <assert.h>
@@ -19,7 +19,6 @@
 #include <canard/transfer_object.h>
 #include <canard/interface.h>
 
-
 // we are using the socketcan driver
 #include <drivers/socketcan/socketcan.h>
 
@@ -27,6 +26,8 @@
 // dronecan_dsdlc compiler
 
 #include <dronecan_msgs.h>
+#include "Config.hpp"
+#include "Logging.hpp"
 
 class CanardInterface : public Canard::Interface 
 {
@@ -64,7 +65,7 @@ public:
     }
 
 private:
-    uint8_t memory_pool[4096];
+    uint8_t memory_pool[2048];
     CanardInstance canard;
     CanardTxTransfer tx_transfer;
 

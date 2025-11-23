@@ -101,28 +101,19 @@ int MainController::startCommand (int argc, char* argv[]) {
 
     if (isRunning ()) {
         ret = -1;
-        printf ("Task already running");
+        snowinfo ("Task already running");
 
     } else {
-#ifdef ROTOR_DEBUG
-        printf ("Try to spawn task. Priority: %d", ROTOR_TASK_PRIORITY);
-#endif
+        snowdebug ("Try to spawn task. Priority: %d", ROTOR_TASK_PRIORITY);
                 
         ret = task_create("ROTOR", ROTOR_TASK_PRIORITY, ROTOR_TASK_STACK_SIZE, MainController::taskSpawn, argv);
 
         if (ret < 0) {
-            printf ("Task start failed (%i)", ret);
+            snowerror ("Task start failed (%i)", ret);
         } else {
-#ifdef ROTOR_DEBUG
-            printf ("Task spawned.  (%i)", ret);
-#endif
+            snowdebug ("Task spawned.  (%i)", ret);
         }
 
-        /*ret = CanRotorNode::startNode("can0");
-        if (ret < 0) {
-            snowerror("Can`t init CAN. Stopping...");
-            return -1;
-        }*/
     }
 
     unlockModule ();
@@ -137,13 +128,12 @@ int MainController::statusCommand () {
         ret = _instance->printStatus ();
 
     } else {
-        snowinfo ("not running\n");
+        snowinfo ("not running");
     }
 
     unlockModule ();
     return ret;
 }
-
 
 bool MainController::taskShouldExit () {
     return _task_should_exit;
@@ -159,7 +149,7 @@ bool MainController::isRunning () {
 }
 
 int MainController::printStatus () {
-    printf ("running. PID: %d", _task_id);
+    snowinfo ("running. PID: %d", _task_id);
     return 0;
 }
 
@@ -178,7 +168,7 @@ int MainController::taskSpawn (int argc, char** argv) {
         _task_id = -1;
         return 0;
     } else {
-        printf("alloc failed");
+        snowinfo("alloc failed");
     }
 
     _instance.reset();
@@ -188,19 +178,57 @@ int MainController::taskSpawn (int argc, char** argv) {
     
 }
 
+bool MainController::updateState() {
+    //_ejection_controller->updateState();
+    
+    /*auto motor_value    = _state->getMotorState().getValue();
+    auto rotation_value = _state->getRotateState().getTargetAngle();
+    auto ejection_value = _state->getEjectionState().getAngle();
+
+
+    
+    snowdebug("MainController::updateState: New state: motor_value=[%d], rotation_value=[%d], ejection_value=[%d]",
+        motor_value, rotation_value, ejection_value
+    );
+    if (motor_value != -1) {
+        _ejection_controller.setMotor (motor_value);
+    }
+    _ejection_controller.setRotationEnable (rotation_value == 1? 0: 1, rotation_value == -1 ? 0: 1);
+    if (ejection_value != -1) {
+        _ejection_controller.setAngle (ejection_value);
+    }
+    if (is_enabled != -1) {
+        _ejection_controller.setEnable (is_enabled);
+    }*/  
+    return true;
+}
+
 void MainController::run() {
     while (!taskShouldExit()) {
         // loop as the wait may be interrupted by a signal
-        //printf("Tick...\n");
+        _ejection_controller->loop();
+
         usleep (10000);
     }
 
     initStop();
 }
-
+ 
 bool MainController::init() {
-    printf("Initing...\n");
-    int ret = CanRotorNode::startNode(iface_name);
+    snowinfo("Initing...\n");
+    _ejection_controller->init(
+        _state,
+        TESTING_SWITCH_IN,
+        ROTATION_FIRST_SENSOR_IN,
+        ROTATION_SECOND_SENSOR_IN,
+        SENSOR_FIRST_ENABLE_GPIO,
+        ROTATION_ENCODER_IN,
+        ROTATION_ENABLE_GPIO,
+        ROTATION_DIRECTION_GPIO,
+        MOTOR_PWM,
+        ANGLE_PWM
+    );
+    int ret = CanRotorNode::startNode(CAN_IFACE_NAME, _state);
     if (ret < 0) {
         snowerror("Can`t init CAN. Stopping...");
         return false;
@@ -210,6 +238,14 @@ bool MainController::init() {
 
 bool MainController::initStop() {
     snowinfo("Stop initing\n");
+    _instance->stop();
+    _task_should_exit = true;
+    return true;
+}
+
+void MainController::stop() {
+    CanRotorNode::stopNode();
+    _ejection_controller->stop();
 }
 
 void MainController::printUsage() {
@@ -217,7 +253,7 @@ void MainController::printUsage() {
 
 void MainController::printUsage(const char *reason) {
     if (reason) {
-        printf ("%s\n", reason);
+        snowerror ("%s\n", reason);
     }
 
     printUsage();
@@ -228,6 +264,7 @@ void MainController::customCommand(int argc, char *argv[]) {
 }
 
 MainController::MainController (int argc, char* argv[])
-    : _state(new State()) {
+    : _state(new State()), 
+    _ejection_controller(new EjectionController()) {
 
 }

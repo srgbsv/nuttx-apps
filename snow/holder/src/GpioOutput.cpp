@@ -6,22 +6,20 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <nuttx/ioexpander/gpio.h>
-#include <stdio.h>
-#include <string>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <syslog.h>
-#include <unistd.h>
+
 
 bool GpioOutput::init(const char * devpath) {
     _devpath = std::string(devpath);
     _fd = open(devpath, O_WRONLY);
     if (_fd < 0) {
-        syslog(LOG_ERR, "open %s failed: %s", devpath, strerror(errno));
+        syslog(LOG_ERR, "open %s failed: %s", _devpath.c_str, strerror(errno));
         return false;
     }
     setValue (_default);
-    syslog(LOG_INFO, "GpioOutput: device %s opened successfully", devpath);
+    syslog(LOG_INFO, "GpioOutput: device %s opened successfully", _devpath.c_str());
     _inited = true;
     return true;
 }

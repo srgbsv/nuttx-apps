@@ -15,6 +15,22 @@ class MainController {
     EjectionController _ejection_controller;
     InputController _input_controller;
 
+    //Input signals
+    // USART B6 B7
+    const char* _motor_enable_in      = "/dev/pwmin1"; // Ejection motor pwm signal. PA8 PA9
+    const char* _rotation_enable_in   = "/dev/pwmin2"; // Ejection rotation pwm signal PA0 PA1
+    const char* _angle_ejection_in    = "/dev/pwmin3"; // Ejection angle pwm signal PA6 PA7
+    const char* _general_switch_in    = "/dev/pwmin9"; // Ejection global_in pwm signal PA2 PA3
+
+    //Output signals
+    const char* _rotation_enable_gpio = "/dev/gpio2";    // Rotation enable gpio. PA4
+    const char* _motor_enable_gpio    = "/dev/pwmout10"; // Motor PWM. PB8
+    const char* _direction_gpio       = "/dev/gpio3";    // Rotation enable gpio. PA5
+    const char* _angle_pwm_gpio       = "/dev/pwmout11"; // Angle servo. PB9
+    const char* _general_switch_gpio  = "/dev/gpio1";    // General switch PB4 //TODO redefine
+
+    const char * _log_path            = "/mnt/log.log";  // Log path 
+
     enum class Instance : uint8_t {
         Main = 0,
         Secondary
@@ -105,8 +121,8 @@ class MainController {
     static int printUsage()
     {
         printf ("help: Show this help\n");
-        printf ("start: Run rotor controller\n");
-        printf ("stop: Stop rotor controller\n");
+        printf ("start: Run snowblower controller\n");
+        printf ("stop: Stop snowblower controller\n");
         return 0;
     }
 

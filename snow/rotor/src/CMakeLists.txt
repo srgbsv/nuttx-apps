@@ -1,9 +1,19 @@
 
 set(SOURCE_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/controllers/MainController.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/controllers/EjectionController.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/providers/CanardInterface.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/providers/CanRotorNode.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/providers/GpioInput.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/providers/GpioOutput.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/providers/PwmInput.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/providers/PwmOutput.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/providers/EncoderProvider.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/state/CanState.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/state/State.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/state/EjectionState.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/state/MotorState.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/state/RotateState.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/providers/RotationProvider.cpp
         PARENT_SCOPE
         )

@@ -10,6 +10,7 @@
 
 #include <nuttx/ioexpander/gpio.h>
 #include <nuttx/config.h>
+#include "EjectionController.hpp"
 
 #define GPIOC_WRITE 1
 
@@ -137,14 +138,6 @@ void EjectionController::stop () {
 
 bool EjectionController::forceMotorSet (float value) {
     return _motor_pwm.setDutyCycle (value);
-}
-
-bool EjectionController::forceRotationSet (bool run, bool clockwise) {
-    if (_direction_gpio.setValue (clockwise) && _rotation_gpio.setValue (run)) {
-        return true;
-    }
-
-    return false;
 }
 
 bool EjectionController::forceAngleSet (float value) {

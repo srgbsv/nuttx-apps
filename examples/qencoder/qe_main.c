@@ -337,7 +337,7 @@ int main(int argc, FAR char *argv[])
 
           else
             {
-              printf("qe_main: %3d. %" PRIi32 "\n", nloops + 1, position);
+              printf("qe_main: %3d. %lu\n", nloops + 1, position);
             }
         }
 

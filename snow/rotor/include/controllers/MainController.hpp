@@ -11,20 +11,14 @@
 
 #include "state/State.hpp"
 #include "providers/CanRotorNode.hpp"
+#include "controllers/EjectionController.hpp"
  
 class MainController {
 
 private:
     std::shared_ptr<State> _state;
     std::shared_ptr<CanRotorNode> _can_rotor_node;
-
-    //////   CONFIG    //////
-    const char * iface_name = "can0";
-
-
-
-
-    ////// END CONFIG //////
+    std::shared_ptr<EjectionController> _ejection_controller;
 
     /**
 	 * @brief Stars the command, ('command start'), checks if if is already
@@ -80,12 +74,44 @@ private:
     static void printUsage();
 
     static void printUsage(const char *reason);
+    void stop();
         
 public:
+
+    //////   CONFIG    //////
+    static constexpr const char* CAN_IFACE_NAME             = "can0";
+
+    ////// Actuator Indexes. Can config //////
+    static const int ROTATE_ACTUATOR_INDEX                  = 1;
+    static const int ESC_ACTUATOR_INDEX                     = 2;
+    static const int ANGLE_ACTUATOR_INDEX                   = 3;
+
+    static constexpr const char* TESTING_SWITCH_IN          = "/dev/gpio1";    // Testing switch gpio.
+
+    ////// ROTATION CONFIG //////
+    // Input signals (device paths)
+    static constexpr const char* ROTATION_FIRST_SENSOR_IN   = "/dev/gpio2";    // Rotation begin sensor gpio.
+    static constexpr const char* ROTATION_SECOND_SENSOR_IN  = "/dev/gpio3";    // Rotation end sensor gpio.
+    static constexpr const char* SENSOR_FIRST_ENABLE_GPIO   = "/dev/gpio4";    // First sensor enable gpio.
+    static constexpr const char* ROTATION_ENCODER_IN        = "/dev/qe0";      // Rotation encoder.
+
+    // Output signals (device paths)
+    static constexpr const char* ROTATION_ENABLE_GPIO       = "/dev/gpio5";    // Rotation enable gpio.
+    static constexpr const char* ROTATION_DIRECTION_GPIO    = "/dev/gpio6";    // Direction gpio.
+    ////////////////////////////////
+
+    /// @brief MOTOR CONFIG
+    static constexpr const char* MOTOR_PWM                  = "/dev/pwmout10"; // Motor PWM.
+
+    /// @brief ANGLE SERVO CONFIG
+    static constexpr const char* ANGLE_PWM                  = "/dev/pwmout11"; // Angle servo.
+
+    ////// END CONFIG //////
+
     static std::unique_ptr<MainController> _instance; 
-    static pid_t _task_id;
-    static pthread_mutex_t _thrower_mutex;
-    static bool _task_should_exit;
+    static pid_t                           _task_id;
+    static pthread_mutex_t                 _thrower_mutex;
+    static bool                            _task_should_exit;
 
     MainController (int argc, char* argv[]);
     ~MainController ();
@@ -112,5 +138,7 @@ public:
      * @return Returns 0 iff successful, -1 otherwise.
      */
     static int startMain (int argc, char** argv);
+
+    bool updateState();
 
 };

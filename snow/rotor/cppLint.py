@@ -4762,7 +4762,7 @@ def CheckLanguage(filename, clean_lines, linenum, file_extension,
 
   # Check for potential format string bugs like printf(foo).
   # We constrain the pattern not to pick things like DocidForPrintf(foo).
-  # Not perfect but it can catch printf(foo.c_str()) and printf(foo->c_str())
+  # Not perfect but it can catch printf(foo) and printf(foo->c_str())
   # TODO(unknown): Catch the following case. Need to change the calling
   # convention of the whole function to process multiple line to handle it.
   #   printf(

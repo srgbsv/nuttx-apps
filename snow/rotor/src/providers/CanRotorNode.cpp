@@ -23,33 +23,29 @@ bool CanRotorNode::_should_exit = false;
 std::unique_ptr<CanRotorNode> CanRotorNode::_instance;
 std::shared_ptr<State> CanRotorNode::_state;
 
-void CanRotorNode::handleGetNodeStatus(const CanardRxTransfer& transfer, const uavcan_protocol_NodeStatus& info)
-{
-    printf("Handled GetNodeStatus\n");
-}
-
 /*
 handle a GetNodeInfo request
 */
-/*void CanRotorNode::handleGetNodeInfo(const CanardRxTransfer& transfer, const uavcan_protocol_GetNodeInfoRequest& req)
+void CanRotorNode::handleGetNodeInfo(const CanardRxTransfer& transfer, const uavcan_protocol_GetNodeInfoRequest& req)
 {
-    printf("Handled GetNodeInfo request\n");
+    snowdebug("Handled GetNodeInfo request\n");
     uavcan_protocol_GetNodeInfoResponse node_info_rsp {};
 
     // fill in node name
     node_info_rsp.name.len = snprintf((char*)node_info_rsp.name.data, sizeof(node_info_rsp.name.data), "CanRotorNode");
 
     // fill in software and hardware versions
-    node_info_rsp.software_version.major = 1;
-    node_info_rsp.software_version.minor = 2;
-    node_info_rsp.hardware_version.major = 3;
-    node_info_rsp.hardware_version.minor = 7;
+    // TODO: get real versions
+    node_info_rsp.software_version.major = 0;
+    node_info_rsp.software_version.minor = 1;
+    node_info_rsp.hardware_version.major = 0;
+    node_info_rsp.hardware_version.minor = 1;
     SystemTools::getUniqueID(node_info_rsp.hardware_version.unique_id);
     node_info_rsp.status = node_status_msg;
     node_info_rsp.status.uptime_sec = SystemTools::millis32() / 1000UL;
 
     node_info_server.respond(transfer, node_info_rsp);
-}*/
+}
 
 /*
 handle a ESC RawCommand request
@@ -64,7 +60,13 @@ handle a Actuators RAWCommand
 */
 void CanRotorNode::handleActuatorListCommand(const CanardRxTransfer& transfer, const uavcan_equipment_actuator_ArrayCommand& cmd)
 {
-    printf("Handle actuator list command\n");
+    snowdebug("Handle actuator list command\n");
+    for (size_t i = 0; i < cmd.commands.len; i++) {
+        int index = cmd.commands.data[i].actuator_id;
+        float value = cmd.commands.data[i].command_value;
+        snowdebug("Actuator %d command: %f\n", index, value);
+        _state->setActuatorValue(index, (int)(value * 1000.0f)); // scale to int
+    }
 }
 
 /*
@@ -208,23 +210,23 @@ void CanRotorNode::sendRotorStatus(void) {
 
 }
 
-int CanRotorNode::startNode(const char* iface_name)
+int CanRotorNode::startNode(const char* iface_name, std::shared_ptr<State> state)
 {
     if (_task_id != -1) {
         snowerror("CanNode already started. Task Id: %d", _task_id);
         return -1;
     }
-    //_state = state;
+    _state = state;
 
-    /*char** argv = new char*[2];
-    argv[0] = strdup("CAN");
-    argv[1] = strdup("can0");*/
+    char** argv = new char*[2];
+    argv[0] = strdup(iface_name);
+    argv[1] = nullptr;
     
-    int ret = task_create("ROTOR_CAN", ROTOR_CAN_TASK_PRIORITY, ROTOR_CAN_TASK_STACK_SIZE, CanRotorNode::taskSpawn, NULL);
+    int ret = task_create("ROTOR_CAN", ROTOR_CAN_TASK_PRIORITY, ROTOR_CAN_TASK_STACK_SIZE, CanRotorNode::taskSpawn, argv);
 
-    /*delete[] argv[0];
+    delete[] argv[0];
     delete[] argv[1];
-    delete[] argv;*/
+    delete[] argv;
 
     return ret;
 }
@@ -242,7 +244,7 @@ void CanRotorNode::run()
 
 
     while (!shouldExit()) {
-        _canard_iface.process(100);
+        _canard_iface.process(1);
 
         const uint64_t ts = SystemTools::micros64();
 
@@ -267,6 +269,18 @@ void CanRotorNode::run()
     }
 }
 
+void CanRotorNode::stopNode() {
+    if (_instance) {
+        snowinfo("CanRotorNode stopping\n");
+        _should_exit = true;
+        // wait for task to exit
+        while (_task_id != -1) {
+            usleep(10000);
+        }
+        snowinfo("CanRotorNode stopped\n");
+    }
+}
+
 /*
 Initializing the Socket CAN backend driver
 */
@@ -284,16 +298,17 @@ int CanRotorNode::taskSpawn(int argc, char** argv) {
     _instance = std::make_unique<CanRotorNode>();
     
     if (_instance) {
+        snowinfo("Can task spawn\n");
+
         _task_id = getpid();
-        printf("Can task spawn\n");
-        _instance->init("can0");
+        _instance->init(argv[1]);
         _instance->run();
 
         _instance.reset();
         _task_id = -1;
         return 0;
     } else {
-        printf("alloc failed");
+        snowerror("alloc failed");
     }
 
     _instance.reset();

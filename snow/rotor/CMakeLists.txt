@@ -1,5 +1,6 @@
 set(STANDALONE_MAKE "$ENV{STANDALONE_MAKE}")
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+set(CMAKE_CXX_STANDARD 17)
 
 set(LIB_DIRECTORY "lib")
 
@@ -19,7 +20,7 @@ if(CONFIG_SNOW_ROTOR_APP)
         ${NUTTX_APPS_DIR}/snow/rotor/lib/dsdl_generated/include
     )
 
-    set(CXX_FLAGS -DDRONECAN_CXX_WRAPPERS)
+    set(CXX_FLAGS -DDRONECAN_CXX_WRAPPERS -D_GLIBCXX_USE_CXX17 -D_STDLIB_H_)
 
     include_directories(include)
     add_subdirectory(include)
@@ -65,6 +66,8 @@ if(CONFIG_SNOW_ROTOR_APP)
 
     target_sources(apps PRIVATE ${CXXSRCS})
     target_include_directories(apps PRIVATE ${INCLUDE_DIRS})
+    target_compile_options(apps PRIVATE ${CXX_FLAGS})
+    target_link_options(apps PRIVATE ${CXX_FLAGS})
 
     link_directories(${CMAKE_CURRENT_BINARY_DIR}/${LIB_DIRECTORY})
 
