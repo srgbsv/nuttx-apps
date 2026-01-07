@@ -28,7 +28,7 @@ handle a GetNodeInfo request
 */
 void CanRotorNode::handleGetNodeInfo(const CanardRxTransfer& transfer, const uavcan_protocol_GetNodeInfoRequest& req)
 {
-    snowdebug("Handled GetNodeInfo request\n");
+    snowinfo("Handled GetNodeInfo request\n");
     uavcan_protocol_GetNodeInfoResponse node_info_rsp {};
 
     // fill in node name
@@ -60,11 +60,11 @@ handle a Actuators RAWCommand
 */
 void CanRotorNode::handleActuatorListCommand(const CanardRxTransfer& transfer, const uavcan_equipment_actuator_ArrayCommand& cmd)
 {
-    snowdebug("Handle actuator list command\n");
+    snowinfo("Handle actuator list command\n");
     for (size_t i = 0; i < cmd.commands.len; i++) {
         int index = cmd.commands.data[i].actuator_id;
         float value = cmd.commands.data[i].command_value;
-        snowdebug("Actuator %d command: %f\n", index, value);
+        snowinfo("Actuator %d command: %f\n", index, value);
         _state->setActuatorValue(index, (int)(value * 1000.0f)); // scale to int
     }
 }
@@ -269,12 +269,14 @@ void CanRotorNode::run()
         }
         if (ts >= next_test_service_at) {
             next_test_service_at += 50000000ULL;
-            if (testNodeStep == 1) {
-                testRelease();
-                testNodeStep = 0;
-            } else {
-                testStep();
-                testNodeStep = 1;
+            if (testMode) {
+                if (testNodeStep == 1) {
+                    testRelease();
+                    testNodeStep = 0;
+                } else {
+                    testStep();
+                    testNodeStep = 1;
+                }
             }
         }
     }

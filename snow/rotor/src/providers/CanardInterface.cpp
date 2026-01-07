@@ -38,6 +38,7 @@ handle an incoming message
 */
 void CanardInterface::onTransferReceived(CanardInstance* ins, CanardRxTransfer* transfer)
 {
+    snowinfo("On transfer received\n");
     CanardInterface* iface = (CanardInterface*) ins->user_reference;
     iface->handle_message(*transfer);
 }

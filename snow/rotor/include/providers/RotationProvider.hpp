@@ -4,11 +4,17 @@
 #include "providers/GpioOutput.hpp"
 #include "providers/EncoderProvider.hpp"
 
+enum RotationError {
+    ERROR_FIRST_SENSOR = 1,
+    ERROR_SECOND_SENSOR = 2
+};
+
 class RotationProvider
 {
 private:
     const int   _full_circle         = 300; // TODO check real angle. Angle between extreme sensor triggers
     const float _comparison_thd      = 1.0f; // angle comparison difference threshold
+    
     const int   ERROR_FIRST_SENSOR   = 1;
     const int   ERROR_SECOND_SENSOR  = 2;
 

@@ -45,7 +45,7 @@
 
 #include <canard.h>
 #ifdef CONFIG_NET_CAN
-#include <socketcan.h>          /* CAN backend driver for nuttx socketcan, distributed
+#include <drivers/socketcan/socketcan.h>          /* CAN backend driver for nuttx socketcan, distributed
                                  * with Libcanard */
 #else
 #include <canard_nuttx.h>       /* CAN backend driver for nuttx, distributed
