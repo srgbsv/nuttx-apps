@@ -101,17 +101,17 @@ int MainController::startCommand (int argc, char* argv[]) {
 
     if (isRunning ()) {
         ret = -1;
-        snowinfo ("Task already running");
+        snowinfo ("Task already running\n");
 
     } else {
-        snowdebug ("Try to spawn task. Priority: %d", ROTOR_TASK_PRIORITY);
+        snowdebug ("Try to spawn task. Priority: %d\n", ROTOR_TASK_PRIORITY);
                 
         ret = task_create("ROTOR", ROTOR_TASK_PRIORITY, ROTOR_TASK_STACK_SIZE, MainController::taskSpawn, argv);
 
         if (ret < 0) {
-            snowerror ("Task start failed (%i)", ret);
+            snowerror ("Task start failed (%i)\n", ret);
         } else {
-            snowdebug ("Task spawned.  (%i)", ret);
+            snowdebug ("Task spawned.  (%i)\n", ret);
         }
 
     }
@@ -149,7 +149,7 @@ bool MainController::isRunning () {
 }
 
 int MainController::printStatus () {
-    snowinfo ("running. PID: %d", _task_id);
+    snowinfo ("running. PID: %d\n", _task_id);
     return 0;
 }
 
@@ -159,7 +159,7 @@ int MainController::taskSpawn (int argc, char** argv) {
 
     if (_instance) {
         _task_id = getpid();
-        snowdebug("Task id: %d", _task_id);
+        snowdebug("Task id: %d\n", _task_id);
 
         bool res = _instance->init();
         _instance->run();
@@ -178,34 +178,30 @@ int MainController::taskSpawn (int argc, char** argv) {
     
 }
 
-bool MainController::updateState() {
-    //_ejection_controller->updateState();
-    
-    /*auto motor_value    = _state->getMotorState().getValue();
+bool MainController::updateState() {    
+    auto motor_value    = _state->getMotorState().getValue();
     auto rotation_value = _state->getRotateState().getTargetAngle();
     auto ejection_value = _state->getEjectionState().getAngle();
+    auto is_enabled     = _state->getIsEnabled();
 
-
-    
-    snowdebug("MainController::updateState: New state: motor_value=[%d], rotation_value=[%d], ejection_value=[%d]",
+    snowdebug("MainController::updateState: New state: motor_value=[%d], rotation_value=[%d], ejection_value=[%d]\n",
         motor_value, rotation_value, ejection_value
     );
     if (motor_value != -1) {
-        _ejection_controller.setMotor (motor_value);
+        _ejection_controller->setMotor (motor_value);
     }
-    _ejection_controller.setRotationEnable (rotation_value == 1? 0: 1, rotation_value == -1 ? 0: 1);
     if (ejection_value != -1) {
-        _ejection_controller.setAngle (ejection_value);
+        _ejection_controller->setAngle (ejection_value);
     }
-    if (is_enabled != -1) {
-        _ejection_controller.setEnable (is_enabled);
-    }*/  
+    _ejection_controller->setEnable (is_enabled);
+      
     return true;
 }
 
 void MainController::run() {
     while (!taskShouldExit()) {
         // loop as the wait may be interrupted by a signal
+        this->updateState();
         _ejection_controller->loop();
 
         usleep (10000);
@@ -230,7 +226,7 @@ bool MainController::init() {
     );
     int ret = CanRotorNode::startNode(CAN_IFACE_NAME, _state);
     if (ret < 0) {
-        snowerror("Can`t init CAN. Stopping...");
+        snowerror("Can`t init CAN. Stopping...\n");
         return false;
     }
     return true;

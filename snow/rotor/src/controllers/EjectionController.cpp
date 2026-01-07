@@ -40,11 +40,10 @@ bool EjectionController::init (
         rotation_direction_gpio_dev,
         rotation_encoder_dev
     );
-
     // Also keep direct gpio handles for quick control if needed
     _rotation_gpio.init (rotation_enable_gpio_dev);
     if (!_rotation_gpio.isInit()) {
-        snowerror("Unable to init rotation enable GPIO device %s", rotation_enable_gpio_dev);
+        snowerror("Unable to init rotation enable GPIO device %s\n", rotation_enable_gpio_dev);
     }
 
     _direction_gpio.init (rotation_direction_gpio_dev);
@@ -55,18 +54,18 @@ bool EjectionController::init (
     // Initialize motor and angle PWMs
     _motor_pwm.init (motor_pwm_dev);
     if (!_motor_pwm.isInit()) {
-        snowerror("Unable to init output PWM device %s", motor_pwm_dev);
+        snowerror("Unable to init output PWM device %s\n", motor_pwm_dev);
     }
 
     _angle_pwm.init (angle_pwm_dev);
     if (!_angle_pwm.isInit()) {
-        snowerror("Unable to init output PWM device %s", angle_pwm_dev);
+        snowerror("Unable to init output PWM device %s\n", angle_pwm_dev);
     }
 
     // Initialize testing/general switch
     _switch_gpio.init (testing_switch_dev);
     if (!_switch_gpio.isInit()) {
-        snowerror("Unable to init switch GPIO device %s", testing_switch_dev);
+        snowerror("Unable to init switch GPIO device %s\n", testing_switch_dev);
     }
 
     return true;
@@ -82,7 +81,6 @@ void EjectionController::stop () {
     _rotation_provider.stop();
     _angle_pwm.setDutyCycle (0);
     _motor_pwm.setDutyCycle (0);
-    _switch_gpio.setValue (false);
 }
 
 bool EjectionController::forceMotorSet (float value) {
@@ -97,6 +95,17 @@ void EjectionController::loop () {
     _rotation_provider.checkAndUpdate();
 }
 
-void EjectionController::setRotationAngel (float angle) {
+void EjectionController::setAngle  (float angle) {
     _rotation_provider.setTargetValue(angle);
+}
+
+void EjectionController::setEnable(bool enable) {
+}
+
+void EjectionController::forceRotate(bool enable, bool direction) {
+    _rotation_provider.forceRotate(enable, direction);
+}
+
+void EjectionController::setMotor(float value) {
+    _motor_pwm.setDutyCycle(value);
 }

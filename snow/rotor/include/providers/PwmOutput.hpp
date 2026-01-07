@@ -1,16 +1,16 @@
 #pragma once
 
 #include <stdio.h>
-#include <string>
 
 #include <nuttx/config.h>
 #include <nuttx/timers/pwm.h>
 
 class PwmOutput {
     private:
-    char *  _devpath;
+    // fixed-size buffer for embedded builds (no std::string)
+    char    _devpath[16];
 
-    int _fd;
+    int _fd = -1;
     pwm_info_s _pwminfo;
     bool _inited = false;
 

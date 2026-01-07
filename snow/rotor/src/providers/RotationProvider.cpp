@@ -1,6 +1,8 @@
 #include "providers/RotationProvider.hpp"
+#include "Logging.hpp"
 #include <stdlib.h>
 #include <math.h>
+#include <unistd.h>
 
 void RotationProvider::init (
     const char* first_sensor_gpio_devpath,
@@ -34,6 +36,15 @@ void RotationProvider::checkAndUpdate () {
         // rotation not needed
         _direction_gpio.setValue(0);
         _rotation_enable_gpio.setValue(0);
+    } else if (_first_sensor_gpio.getState() == 0 || _second_sensor_gpio.getState() == 0) {
+        if (_first_sensor_gpio.getState() == 0) {
+            snowerror("First sensor triggered. Error");
+        } else {
+            snowerror("Second sensor triggered. Error");
+        }
+        snowdebug("Current angle: %f, _target angle: %f", _current_angle, _target_angle);
+        _direction_gpio.setValue(0);
+        _rotation_enable_gpio.setValue(0);
     } else {
         if (_target_angle - _current_angle > _comparison_thd) {
             _direction_gpio.setValue(1);
@@ -44,7 +55,7 @@ void RotationProvider::checkAndUpdate () {
     }
 }
 
-void RotationProvider::updateAngle() {
+void RotationProvider:: updateAngle() {
     int encoder_state = _encoder_input.getState();
     _current_angle = (float) encoder_state / _impulses_per_degree;
 }
@@ -55,3 +66,34 @@ void RotationProvider::stop() {
 
 RotationProvider::~RotationProvider () {
 }
+
+void RotationProvider::calibrate() {
+    _total_impulse_count = 0;
+    if (_first_sensor_gpio.getState() == 0) {
+        _direction_gpio.setValue(0); 
+        _rotation_enable_gpio.setValue(0);
+    }
+   
+    
+}
+
+void RotationProvider::gotoZeroPosition() {
+    _direction_gpio.setValue(0); 
+    _rotation_enable_gpio.setValue(0);
+    if (_first_sensor_gpio.getState() == 0) {
+        snowdebug("Already at zero position");
+        return;
+    }
+    _direction_gpio.setValue(0); 
+    _rotation_enable_gpio.setValue(1);
+    while (_first_sensor_gpio.getState() != 0) {
+        updateAngle();
+        usleep(1000);
+    }
+}
+
+void RotationProvider::forceRotate(bool enable, bool direction) {
+    _direction_gpio.setValue(direction);
+    _rotation_enable_gpio.setValue(enable);
+}
+

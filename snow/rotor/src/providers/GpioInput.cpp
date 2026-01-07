@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #include <nuttx/ioexpander/gpio.h>
 #include <stdio.h>
-#include <string>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <syslog.h>
@@ -15,21 +15,34 @@
 #include "Logging.hpp"
 
 GpioInput::GpioInput (const char* devpath) {
+    _devpath[0] = '\0';
     init (devpath);
 }
 
 GpioInput::~GpioInput () {
-    close(_fd);
+    if (_fd >= 0) {
+        close(_fd);
+        _fd = -1;
+    }
 }
 
 bool GpioInput::init (const char* devpath) {
-    strcpy(_devpath, devpath);
-    _fd = open(devpath, O_RDONLY);
+    // safe copy into fixed buffer
+    if (devpath) {
+        strncpy(_devpath, devpath, sizeof(_devpath) - 1);
+        _devpath[sizeof(_devpath) - 1] = '\0';
+    } else {
+        _devpath[0] = '\0';
+    }
+
+    _fd = open(_devpath, O_RDONLY);
     if (_fd < 0) {
-        snowerror("open %s failed: %s", _devpath, strerror(errno));
+        snowerror("open %s failed: %s\n", _devpath, strerror(errno));
+        _inited = false;
+        _fd = -1;
         return false;
     }
-    snowinfo("GpioInput: device %s opened successfully", _devpath);
+    snowinfo("GpioInput: device %s opened successfully\n", _devpath);
     _inited = true;
     return true;
 }
@@ -43,7 +56,6 @@ int GpioInput::getState () {
         int errcode = errno;
         snowerror("ERROR: Failed to read value from %s: %d\n",
         _devpath, errcode);
-        close(_fd);
         return EXIT_FAILURE;
     }
     return invalue;

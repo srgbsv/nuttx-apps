@@ -12,23 +12,33 @@ class EjectionController {
 
     const int _event_count_thd = 4;
 
-    GpioOutput       _switch_gpio;
+    GpioInput        _switch_gpio;
     PwmOutput        _motor_pwm;
     PwmOutput        _angle_pwm;
     GpioOutput       _rotation_gpio;
     GpioOutput       _direction_gpio;
     RotationProvider _rotation_provider;
 
+    /**
+     * Current rotation angle
+     */
     float            _current_rotation;
+    /**
+     * Target rotation angle
+     */
     float            _target_rotation;
-    int              _rotation_event_cnt = 0;
 
+    /**
+     * Current blowing angle. Servo
+     */
     float            _current_angle;
+    /**
+     * Target blowing angle. Servo
+     */
     float            _target_angle;
-    int              _angle_current_cnt = 0;
+
 
     float            _current_motor_value;
-    int              _motor_value_cnt = 0;
 
     bool             _rotation_enable;
     bool             _rotation_direction;
@@ -59,11 +69,11 @@ class EjectionController {
 
     void setMotor(float motor_value);
     void setAngle(float angle);
-    void setRotationAngel(float angle);
     void setEnable(bool enable);
 
     bool forceMotorSet(float value);
     bool forceAngleSet(float value);
+    void forceRotate(bool enable, bool direction);
 
     void loop();
     void stop();

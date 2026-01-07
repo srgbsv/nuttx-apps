@@ -4,7 +4,8 @@
 
 #include <debug.h>
 #include <syslog.h>
-
+#include <stdlib.h>
+#include "Config.hpp"
 
 #ifndef __APPS_SNOW_ROTOR_LOGER_HPP
 #define __APPS_SNOW_ROTOR_LOGER_HPP

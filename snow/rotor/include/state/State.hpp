@@ -14,12 +14,14 @@ private:
     RotateState            _rotate_state;
     MotorState             _motor_state;
     EjectionState          _ejection_state;
+    bool                   _is_enabled;
     
 public:
     CanState&           getCanState();
     RotateState&        getRotateState();
     MotorState&         getMotorState();
     EjectionState&      getEjectionState();
+    bool                getIsEnabled();
 
     int setActuatorValue(int index, int value);
 

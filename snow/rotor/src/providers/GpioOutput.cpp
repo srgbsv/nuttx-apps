@@ -15,21 +15,33 @@
 #include "Config.hpp"
 #include "Logging.hpp"
 
+GpioOutput::GpioOutput(const char * devpath)
+{
+    _devpath[0] = '\0';
+    init (devpath);
+}
+
 bool GpioOutput::init(const char * devpath) {
-    strcpy(_devpath, devpath);
+    if (devpath) {
+        strncpy(_devpath, devpath, sizeof(_devpath) - 1);
+        _devpath[sizeof(_devpath) - 1] = '\0';
+    } else {
+        _devpath[0] = '\0';
+    }
     _fd = open(devpath, O_WRONLY);
     if (_fd < 0) {
-        snowerror("open %s failed: %s", devpath, strerror(errno));
+        snowerror("open %s failed: %s\n", devpath, strerror(errno));
         return false;
     }
     setValue (_default);
-    snowinfo("GpioOutput: device %s opened successfully", devpath);
+    snowinfo("GpioOutput: device %s opened successfully\n", devpath);
     _inited = true;
     return true;
 }
 
 bool GpioOutput::setValue(bool value) {
     int ret = ioctl(_fd, GPIOC_WRITE, (unsigned long)value);
+    snowdebug("Setting GPIO %s to value %u\n", _devpath, (unsigned int)value);
     if (ret < 0)
     {
         snowerror("ERROR!!!!");

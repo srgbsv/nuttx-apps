@@ -5,7 +5,7 @@ class PwmInput {
     private:
     int _fd;
     bool _inited    = false;
-    char *     _devpath;
+    char _devpath[16];
     int _min = 0;
     int _max = 100;
 

@@ -14,7 +14,7 @@ int RotateState::getAngle() {
 
 void RotateState::setTargetAngle(int angle) { 
     if (angle != _target_angle) {
-        snowinfo("Rotate target angle set to %d", angle);
+        snowinfo("Rotate target angle set to %d\n", angle);
     }
     _target_angle = angle; 
 }

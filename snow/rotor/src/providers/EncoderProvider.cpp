@@ -18,8 +18,12 @@ EncoderProvider::EncoderProvider (const char* devpath) {
 }
 
 bool EncoderProvider::init (const char* devpath) {
-    strcpy(_devpath, devpath);
-    _fd = open(devpath, O_RDONLY);
+    if (devpath) {
+        strncpy(_devpath, devpath, sizeof(_devpath) - 1);
+        _devpath[sizeof(_devpath) - 1] = '\0';
+    } else {
+        _devpath[0] = '\0';
+    }    _fd = open(devpath, O_RDONLY);
     if (_fd < 0) {
         snowerror("open %s failed: %s", devpath, strerror(errno));
         return false;
@@ -51,7 +55,7 @@ int EncoderProvider::getState () {
 }
 
 void EncoderProvider::resetCounter () {
-    snowinfo("Resetting encoder counter for device");
+    snowinfo("Resetting encoder counter for device\n");
     int ret = ioctl(_fd, QEIOC_RESET, 0);
     if (ret < 0)
     {

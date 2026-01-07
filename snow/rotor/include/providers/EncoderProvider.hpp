@@ -5,7 +5,7 @@
 class EncoderProvider {
     int             _fd;
     bool            _inited = false;
-    char *          _devpath;
+    char            _devpath[16];
 
 public:
     EncoderProvider(const char * devpath);

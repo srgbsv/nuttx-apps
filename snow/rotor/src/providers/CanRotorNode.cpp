@@ -152,7 +152,7 @@ ask for a dynamic node allocation
 
     DNA.send_next_node_id_allocation_request_at_ms =
         now + UAVCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_MIN_REQUEST_PERIOD_MS +
-        (random() % UAVCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_MAX_FOLLOWUP_DELAY_MS);
+        (random() % UAVhandleActuatorListCommandCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_MAX_FOLLOWUP_DELAY_MS);
 
     uint8_t my_unique_id[16];
     SystemTools::getUniqueID(my_unique_id);
@@ -241,6 +241,7 @@ void CanRotorNode::run()
     */
     uint64_t next_1hz_service_at = SystemTools::micros64();
     uint64_t next_50hz_service_at = SystemTools::micros64();
+    uint64_t next_test_service_at = SystemTools::micros64();
 
 
     while (!shouldExit()) {
@@ -266,6 +267,16 @@ void CanRotorNode::run()
 
             //sendRotorStatus();
         }
+        if (ts >= next_test_service_at) {
+            next_test_service_at += 50000000ULL;
+            if (testNodeStep == 1) {
+                testRelease();
+                testNodeStep = 0;
+            } else {
+                testStep();
+                testNodeStep = 1;
+            }
+        }
     }
 }
 
@@ -287,8 +298,17 @@ Initializing the Socket CAN backend driver
 int CanRotorNode::init(const char * iface_name) {
     snowinfo("Canard Iface init %s\n", iface_name);
     // init the interface
-    _canard_iface.init(iface_name);
-    _canard_iface.set_node_id(ROTOR_CAN_NODE_ID);
+    #ifdef ROTOR_TEST_MODE
+        testMode = ROTOR_TEST_MODE;
+    #else
+        testMode = false;
+    #endif
+    if (!testMode) {
+        _canard_iface.init(iface_name);
+        _canard_iface.set_node_id(ROTOR_CAN_NODE_ID);
+    } else {
+        snowinfo("Canard Iface init test mode\n");
+    }
 
     return 0;
 }
@@ -315,4 +335,18 @@ int CanRotorNode::taskSpawn(int argc, char** argv) {
     _task_id = -1;
 
     return -1;
+}
+
+void CanRotorNode::testStep() {
+    snowinfo("Test step\n");
+    for(int i = 0; i < 4; i++) {
+        int res = _state->setActuatorValue(i, 500);
+    }
+}
+
+void CanRotorNode::testRelease() {
+    snowinfo("Test release\n");
+    for(int i = 0; i < 4; i++) {
+        int res = _state->setActuatorValue(i, 0.0f);
+    }
 }

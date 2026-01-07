@@ -23,6 +23,7 @@ EjectionState& State::getEjectionState()
 
 int State::setActuatorValue(int index, int value)
 {
+    snowdebug("Setting actuator %d to value %d\n", index, value);
     if (index == MainController::ROTATE_ACTUATOR_INDEX) {
         _rotate_state.setTargetAngle(value);
         return 0;
@@ -41,4 +42,8 @@ State::State () {
 
 State::~State() {
     
+}
+
+bool State::getIsEnabled() {
+    return _is_enabled;
 }

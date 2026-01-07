@@ -79,32 +79,32 @@ private:
 public:
 
     //////   CONFIG    //////
-    static constexpr const char* CAN_IFACE_NAME             = "can0";
+    static constexpr const char* CAN_IFACE_NAME             = "can0"; // PD0-CAN RX, PD1-CAN TX
 
     ////// Actuator Indexes. Can config //////
     static const int ROTATE_ACTUATOR_INDEX                  = 1;
     static const int ESC_ACTUATOR_INDEX                     = 2;
     static const int ANGLE_ACTUATOR_INDEX                   = 3;
 
-    static constexpr const char* TESTING_SWITCH_IN          = "/dev/gpio1";    // Testing switch gpio.
+    static constexpr const char* TESTING_SWITCH_IN          = "/dev/gpio0";    // Testing switch gpio. IN C13
 
     ////// ROTATION CONFIG //////
     // Input signals (device paths)
-    static constexpr const char* ROTATION_FIRST_SENSOR_IN   = "/dev/gpio2";    // Rotation begin sensor gpio.
-    static constexpr const char* ROTATION_SECOND_SENSOR_IN  = "/dev/gpio3";    // Rotation end sensor gpio.
-    static constexpr const char* SENSOR_FIRST_ENABLE_GPIO   = "/dev/gpio4";    // First sensor enable gpio.
-    static constexpr const char* ROTATION_ENCODER_IN        = "/dev/qe0";      // Rotation encoder.
+    static constexpr const char* ROTATION_FIRST_SENSOR_IN   = "/dev/gpio1";    // Rotation begin sensor gpio. IN E3
+    static constexpr const char* ROTATION_SECOND_SENSOR_IN  = "/dev/gpio2";    // Rotation end sensor gpio. IN E4
+    static constexpr const char* SENSOR_FIRST_ENABLE_GPIO   = "/dev/gpio3";    // First sensor enable gpio for calibration. IN E5
+    static constexpr const char* ROTATION_ENCODER_IN        = "/dev/qe0";      // Rotation encoder. E9
 
     // Output signals (device paths)
-    static constexpr const char* ROTATION_ENABLE_GPIO       = "/dev/gpio5";    // Rotation enable gpio.
-    static constexpr const char* ROTATION_DIRECTION_GPIO    = "/dev/gpio6";    // Direction gpio.
+    static constexpr const char* ROTATION_ENABLE_GPIO       = "/dev/gpio4";    // Rotation enable gpio. OUT E6
+    static constexpr const char* ROTATION_DIRECTION_GPIO    = "/dev/gpio5";    // Direction gpio. OUT E7
     ////////////////////////////////
 
     /// @brief MOTOR CONFIG
-    static constexpr const char* MOTOR_PWM                  = "/dev/pwmout10"; // Motor PWM.
+    static constexpr const char* MOTOR_PWM                  = "/dev/pwmout3"; // Motor PWM.   A6?
 
     /// @brief ANGLE SERVO CONFIG
-    static constexpr const char* ANGLE_PWM                  = "/dev/pwmout11"; // Angle servo.
+    static constexpr const char* ANGLE_PWM                  = "/dev/pwmout4"; // Angle servo.  D12?
 
     ////// END CONFIG //////
 

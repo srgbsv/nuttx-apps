@@ -9,7 +9,7 @@ int EjectionState::getAngle() {
 
 void EjectionState::setAngle(int angle) { 
     if (angle != _angle) {
-        snowinfo("Throw angle set to %d", angle);
+        snowinfo("Throw angle set to %d\n", angle);
         _angle = angle; 
     }
 }

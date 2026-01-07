@@ -88,6 +88,9 @@ private:
 
     bool shouldExit() { return _should_exit; }
 
+    void testStep();
+    void testRelease();
+
     // keep node_status around for updating status
     uavcan_protocol_NodeStatus node_status_msg;
 
@@ -98,4 +101,7 @@ private:
         uint32_t send_next_node_id_allocation_request_at_ms;
         uint32_t node_id_allocation_unique_id_offset;
     } DNA;
+
+    bool testMode = false;
+    int  testNodeStep = 0;
 };

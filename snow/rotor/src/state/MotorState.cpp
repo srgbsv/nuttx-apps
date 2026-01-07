@@ -8,7 +8,7 @@ int MotorState::getValue() {
 
 void MotorState::setValue(int value) {
     if (value != _value) {
-        snowinfo("ESC value set to %d", value);
+        snowinfo("ESC value set to %d\n", value);
         _value = value; 
     }
 }

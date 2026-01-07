@@ -7,25 +7,33 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <syslog.h>
+#include <string.h>
 
 #include "providers/PwmOutput.hpp"
 #include "Logging.hpp"
 
 PwmOutput::PwmOutput(const char * devpath)
 {
+    _devpath[0] = '\0';
     init (devpath);
 }
 
 bool PwmOutput::init (const char* devpath) {
     _pwminfo.frequency = 50;
     _pwminfo.duty = 0;
-    strcpy(_devpath, devpath);
-    _fd = open (devpath, O_RDONLY);
+    if (devpath) {
+        strncpy(_devpath, devpath, sizeof(_devpath) - 1);
+        _devpath[sizeof(_devpath) - 1] = '\0';
+    } else {
+        _devpath[0] = '\0';
+    }
+    _fd = open (_devpath, O_RDONLY);
     if (_fd < 0) {
-        snowerror("open %s failed: %s", devpath, strerror(errno));
+        snowerror("open %s failed: %s", _devpath, strerror(errno));
+        _fd = -1;
         return false;
     }
-    snowinfo("PwmOutput: device %s opened successfully", devpath);
+    snowinfo("PwmOutput: device %s opened successfully\n", _devpath);
     _inited = true;
 
     return true;
@@ -33,8 +41,9 @@ bool PwmOutput::init (const char* devpath) {
 
 PwmOutput::~PwmOutput()
 { 
-    if (_fd) {
+    if (_fd >= 0) {
         close(_fd);
+        _fd = -1;
     }
 }
 
@@ -42,9 +51,7 @@ PwmOutput::~PwmOutput()
 
 bool PwmOutput::setDutyCycle (uint8_t duty)
 {
-#ifdef HOLDER_DEBUG
-    snowinfo("Set duty for device %s: %d", _devpath, duty);
-#endif
+    snowdebug("Set duty for device %s: %d", _devpath, duty);
     _pwminfo.duty = duty ? \
     b16divi(uitoub16(duty) - 1, 100) : 0;
     return updatePwmState();
@@ -52,7 +59,7 @@ bool PwmOutput::setDutyCycle (uint8_t duty)
 
 bool PwmOutput::updatePwmState()
 {
-    snowdebug("Start pulse training for device %s: freq %lu Hz, duty: %lu ", _devpath, _pwminfo.frequency, _pwminfo.duty);
+    snowdebug("Start pulse training for device %s: freq %lu Hz, duty: %lu \n", _devpath, _pwminfo.frequency, _pwminfo.duty);
     int ret = ioctl(_fd, PWMIOC_SETCHARACTERISTICS,
               (unsigned long)((uintptr_t)&_pwminfo));
     if (ret < 0)

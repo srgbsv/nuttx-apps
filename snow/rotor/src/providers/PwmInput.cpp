@@ -26,14 +26,19 @@ PwmInput::~PwmInput() {
 }
 
 bool PwmInput::init(const char * devpath) {
-    strcpy(_devpath, devpath);
+     if (devpath) {
+        strncpy(_devpath, devpath, sizeof(_devpath) - 1);
+        _devpath[sizeof(_devpath) - 1] = '\0';
+    } else {
+        _devpath[0] = '\0';
+    }
     _fd = open(devpath, O_RDONLY);
     //Check for error opening the deviceuu
     if (_fd < 0) {
-        snowerror("Error when opening device %s", devpath);
+        snowerror("Error when opening device %s\n", devpath);
         return false;
     }
-    snowinfo("PwmInput: device %s opened successfully, PID: %d", devpath, getpid());
+    snowinfo("PwmInput: device %s opened successfully, PID: %d\n", devpath, getpid());
 
     _inited = true;
     return true;
@@ -47,7 +52,7 @@ bool PwmInput::init (const char* devpath, int min, int max) {
 
 int PwmInput::getDutyCycle () {
     if (!_inited) {
-        snowerror("PwmInput: device %s is not inited", _devpath);
+        snowerror("PwmInput: device %s is not inited\n", _devpath);
 
         return 0;
     }
@@ -62,7 +67,7 @@ int PwmInput::getDutyCycle () {
     	(unsigned long)((uintptr_t)&dutycycle));
 
 	if (ret < 0) {
-        snowerror("PwmInput: Device %s, PID: %d,  ioctl(CAPIOC_DUTYCYCLE) failed: %d", _devpath, getpid(), errno);
+        snowerror("PwmInput: Device %s, PID: %d,  ioctl(CAPIOC_DUTYCYCLE) failed: %d\n", _devpath, getpid(), errno);
 
         return 0;
     }
