@@ -23,25 +23,31 @@ EjectionState& State::getEjectionState()
 
 int State::setActuatorValue(int index, int value)
 {
-    snowdebug("Setting actuator %d to value %d\n", index, value);
+    lock();
+    //snowdebug("Setting actuator %d to value %d\n", index, value);
     if (index == MainController::ROTATE_ACTUATOR_INDEX) {
         _rotate_state.setTargetAngle(value);
+        unlock();
         return 0;
     } else if (index == MainController::ESC_ACTUATOR_INDEX) {
         _motor_state.setValue(value);
+        unlock();
         return 0;
     } else if (index == MainController::ANGLE_ACTUATOR_INDEX) {
         _ejection_state.setAngle(value);
+        unlock();
         return 0;
     }
+    unlock();
     return -1; // Return -1 if index is invalid
 }
 
 State::State () {
+    pthread_mutex_init(&_state_mutex, nullptr);
 }
 
 State::~State() {
-    
+    pthread_mutex_destroy(&_state_mutex);
 }
 
 bool State::getIsEnabled() {

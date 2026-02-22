@@ -60,12 +60,14 @@ handle a Actuators RAWCommand
 */
 void CanRotorNode::handleActuatorListCommand(const CanardRxTransfer& transfer, const uavcan_equipment_actuator_ArrayCommand& cmd)
 {
-    snowinfo("Handle actuator list command\n");
+    //snowinfo("Handle actuator list command\n");
     for (size_t i = 0; i < cmd.commands.len; i++) {
         int index = cmd.commands.data[i].actuator_id;
         float value = cmd.commands.data[i].command_value;
-        snowinfo("Actuator %d command: %f\n", index, value);
-        _state->setActuatorValue(index, (int)(value * 1000.0f)); // scale to int
+        //snowinfo("Actuator %d command: %f\n", index, value);
+        _state->lock();
+        _state->setActuatorValue(index, (int) (value * 1000.0f)); // scale to int and 
+        _state->unlock();
     }
 }
 
@@ -245,7 +247,7 @@ void CanRotorNode::run()
 
 
     while (!shouldExit()) {
-        _canard_iface.process(1);
+        _canard_iface.process(10);
 
         const uint64_t ts = SystemTools::micros64();
 
@@ -265,7 +267,7 @@ void CanRotorNode::run()
         if (ts >= next_50hz_service_at) {
             next_50hz_service_at += 1000000ULL/50U;
 
-            //sendRotorStatus();
+            sendRotorStatus();
         }
         if (ts >= next_test_service_at) {
             next_test_service_at += 50000000ULL;

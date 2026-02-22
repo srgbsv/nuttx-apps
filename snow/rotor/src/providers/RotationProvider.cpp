@@ -94,6 +94,6 @@ void RotationProvider::gotoZeroPosition() {
 
 void RotationProvider::forceRotate(bool enable, bool direction) {
     _direction_gpio.setValue(direction);
-    _rotation_enable_gpio.setValue(enable);
+    _rotation_enable_gpio.setValue(!enable);
 }
 

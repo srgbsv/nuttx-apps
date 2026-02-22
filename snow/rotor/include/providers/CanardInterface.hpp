@@ -65,7 +65,7 @@ public:
     }
 
 private:
-    uint8_t memory_pool[2048];
+    uint8_t memory_pool[32 * 1024];
     CanardInstance canard;
     CanardTxTransfer tx_transfer;
 

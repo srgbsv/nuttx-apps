@@ -20,6 +20,10 @@ private:
     std::shared_ptr<CanRotorNode> _can_rotor_node;
     std::shared_ptr<EjectionController> _ejection_controller;
 
+    int _current_motor_value = 0;
+    int _current_rotation_value = 0;
+    int _current_angle_value = 0;
+
     /**
 	 * @brief Stars the command, ('command start'), checks if if is already
 	 *        running and calls MainController::task_spawn() if it's not.
@@ -82,9 +86,9 @@ public:
     static constexpr const char* CAN_IFACE_NAME             = "can0"; // PD0-CAN RX, PD1-CAN TX
 
     ////// Actuator Indexes. Can config //////
-    static const int ROTATE_ACTUATOR_INDEX                  = 1;
-    static const int ESC_ACTUATOR_INDEX                     = 2;
-    static const int ANGLE_ACTUATOR_INDEX                   = 3;
+    static const int ROTATE_ACTUATOR_INDEX                  = 0;
+    static const int ESC_ACTUATOR_INDEX                     = 1;
+    static const int ANGLE_ACTUATOR_INDEX                   = 2;
 
     static constexpr const char* TESTING_SWITCH_IN          = "/dev/gpio0";    // Testing switch gpio. IN C13
 
@@ -96,7 +100,7 @@ public:
     static constexpr const char* ROTATION_ENCODER_IN        = "/dev/qe0";      // Rotation encoder. E9
 
     // Output signals (device paths)
-    static constexpr const char* ROTATION_ENABLE_GPIO       = "/dev/gpio4";    // Rotation enable gpio. OUT E6
+    static constexpr const char* ROTATION_ENABLE_GPIO       = "/dev/gpio4";    // Rotation enable gpio. OUT E8
     static constexpr const char* ROTATION_DIRECTION_GPIO    = "/dev/gpio5";    // Direction gpio. OUT E7
     ////////////////////////////////
 
@@ -104,7 +108,7 @@ public:
     static constexpr const char* MOTOR_PWM                  = "/dev/pwmout3"; // Motor PWM.   A6?
 
     /// @brief ANGLE SERVO CONFIG
-    static constexpr const char* ANGLE_PWM                  = "/dev/pwmout4"; // Angle servo.  D12?
+    static constexpr const char* ANGLE_PWM                  = "/dev/pwmout4"; // Angle servo.  B6?
 
     ////// END CONFIG //////
 

@@ -12,7 +12,6 @@ enum RotationError {
 class RotationProvider
 {
 private:
-    const int   _full_circle         = 300; // TODO check real angle. Angle between extreme sensor triggers
     const float _comparison_thd      = 1.0f; // angle comparison difference threshold
     
     const int   ERROR_FIRST_SENSOR   = 1;
@@ -43,7 +42,7 @@ private:
     void gotoZeroPosition ();
 
 public:
-
+    const int   _full_circle         = 300; // TODO check real angle. Angle between extreme sensor triggers
     void  calibrate();
 
     float getCurrentAngle();

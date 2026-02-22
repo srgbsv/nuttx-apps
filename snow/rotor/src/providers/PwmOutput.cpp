@@ -52,8 +52,7 @@ PwmOutput::~PwmOutput()
 bool PwmOutput::setDutyCycle (uint8_t duty)
 {
     snowdebug("Set duty for device %s: %d", _devpath, duty);
-    _pwminfo.duty = duty ? \
-    b16divi(uitoub16(duty) - 1, 100) : 0;
+    _pwminfo.duty = b16divi(uitoub16(duty), 100);
     return updatePwmState();
 }
 
@@ -76,4 +75,3 @@ bool PwmOutput::updatePwmState()
     }
     return true;
 }
-

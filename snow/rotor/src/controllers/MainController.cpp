@@ -179,20 +179,35 @@ int MainController::taskSpawn (int argc, char** argv) {
 }
 
 bool MainController::updateState() {    
+    _state->lock();
     auto motor_value    = _state->getMotorState().getValue();
     auto rotation_value = _state->getRotateState().getTargetAngle();
     auto ejection_value = _state->getEjectionState().getAngle();
     auto is_enabled     = _state->getIsEnabled();
+    _state->unlock();
+    
+    bool changed = false;
+   
+    if (
+        motor_value == _current_motor_value &&
+        rotation_value == _current_rotation_value &&
+        ejection_value == _current_angle_value
+    ) {
+        return false;
+    }
 
-    snowdebug("MainController::updateState: New state: motor_value=[%d], rotation_value=[%d], ejection_value=[%d]\n",
+    snowdebug("MainController::updateState:\nOld state: motor_value=[%d], rotation_value=[%d], ejection_value=[%d]\nNew state: motor_value=[%d], rotation_value=[%d], ejection_value=[%d]\n",
+        _current_motor_value, _current_rotation_value, _current_angle_value,
         motor_value, rotation_value, ejection_value
     );
-    if (motor_value != -1) {
-        _ejection_controller->setMotor (motor_value);
-    }
-    if (ejection_value != -1) {
-        _ejection_controller->setAngle (ejection_value);
-    }
+
+    _current_motor_value = motor_value;
+    _current_rotation_value = rotation_value;
+    _current_angle_value = ejection_value;
+
+    _ejection_controller->setMotor (motor_value);
+    _ejection_controller->setAngle (ejection_value);
+    _ejection_controller->setRotation (rotation_value);
     _ejection_controller->setEnable (is_enabled);
       
     return true;
@@ -204,10 +219,11 @@ void MainController::run() {
         this->updateState();
         _ejection_controller->loop();
 
-        usleep (10000);
+        usleep (10);
     }
 
     initStop();
+
 }
  
 bool MainController::init() {

@@ -11,6 +11,7 @@
 #include <nuttx/config.h>
 #include "controllers/EjectionController.hpp"
 #include "Logging.hpp"
+#include "tools/SystemTools.hpp"
 
 EjectionController::EjectionController() {
 
@@ -78,7 +79,7 @@ EjectionController::~EjectionController () {
 }
 
 void EjectionController::stop () {
-    _rotation_provider.stop();
+    _rotation_provider.forceRotate(false, false);
     _angle_pwm.setDutyCycle (0);
     _motor_pwm.setDutyCycle (0);
 }
@@ -92,11 +93,27 @@ bool EjectionController::forceAngleSet (float value) {
 }
 
 void EjectionController::loop () {
-    _rotation_provider.checkAndUpdate();
+    //_rotation_provider.checkAndUpdate();
+    if (_is_enabled && _last_command_time + _timeout_thd < SystemTools::micros64()) {
+        _is_enabled = false;
+        snowdebug("EjectionController: command timeout, stopping outputs\n");
+        stop();
+    }
 }
 
-void EjectionController::setAngle  (float angle) {
-    _rotation_provider.setTargetValue(angle);
+void EjectionController::setAngle  (int value) {
+    _last_command_time = SystemTools::micros64();
+    if (_current_angle == value) {
+        return;
+    }
+    _current_angle = value;
+    if (value < -250) {
+        _angle_pwm.setDutyCycle(3);
+    } else if (value > -250 && value < 250) {
+        _angle_pwm.setDutyCycle(6);
+    } else {
+        _angle_pwm.setDutyCycle(12);
+    }
 }
 
 void EjectionController::setEnable(bool enable) {
@@ -106,6 +123,32 @@ void EjectionController::forceRotate(bool enable, bool direction) {
     _rotation_provider.forceRotate(enable, direction);
 }
 
-void EjectionController::setMotor(float value) {
-    _motor_pwm.setDutyCycle(value);
+void EjectionController::setRotation(int value) {
+    _last_command_time = SystemTools::micros64();
+    if (_current_rotation == value) {
+        return;
+    }
+    _current_rotation = value;
+    if (value < -250) {
+        _rotation_provider.forceRotate(true, false);
+    } else if (value > -250 && value < 250) {
+        _rotation_provider.forceRotate(false, false);
+    } else {
+        _rotation_provider.forceRotate(true, true);
+    }
+}
+
+void EjectionController::setMotor(int value) {
+    _last_command_time = SystemTools::micros64();
+    if (_current_motor_value == value) {
+        return;
+    }
+    _current_motor_value = value;
+    if (value < -50) {
+        _motor_pwm.setDutyCycle(2);
+    } else if (value > -50 && value < 50) {
+        _motor_pwm.setDutyCycle(25);
+    } else {
+        _motor_pwm.setDutyCycle(65);
+    }
 }

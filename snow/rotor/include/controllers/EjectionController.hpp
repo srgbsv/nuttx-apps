@@ -11,6 +11,8 @@ class EjectionController {
     private:
 
     const int _event_count_thd = 4;
+    const int _timeout_thd = 100; // ms
+
 
     GpioInput        _switch_gpio;
     PwmOutput        _motor_pwm;
@@ -47,6 +49,9 @@ class EjectionController {
     bool             _current_switch_value;
     int              _switch_value_cnt = 0;
 
+    int              _last_command_time = 0;
+    bool             _is_enabled = false;
+
     std::shared_ptr<State> _state;
 
     public:
@@ -67,8 +72,9 @@ class EjectionController {
     EjectionController();
     ~EjectionController();
 
-    void setMotor(float motor_value);
-    void setAngle(float angle);
+    void setMotor(int motor_value);
+    void setAngle(int angle);
+    void setRotation(int angle);
     void setEnable(bool enable);
 
     bool forceMotorSet(float value);

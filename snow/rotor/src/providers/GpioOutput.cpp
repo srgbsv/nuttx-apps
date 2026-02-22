@@ -41,7 +41,7 @@ bool GpioOutput::init(const char * devpath) {
 
 bool GpioOutput::setValue(bool value) {
     int ret = ioctl(_fd, GPIOC_WRITE, (unsigned long)value);
-    snowdebug("Setting GPIO %s to value %u\n", _devpath, (unsigned int)value);
+    snowinfo("Setting GPIO %s to value %u\n", _devpath, (unsigned int)value);
     if (ret < 0)
     {
         snowerror("ERROR!!!!");
