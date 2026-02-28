@@ -381,6 +381,7 @@ int main(int argc, FAR char *argv[])
 
       msgsize = sizeof(struct can_msg_s);
       nbytes = read(fd, &rxmsg, msgsize);
+      printf("READ bytes: %ld", nbytes);
       if (nbytes < CAN_MSGLEN(0) || nbytes > msgsize)
         {
           printf("ERROR: read(%ld) returned %ld\n",

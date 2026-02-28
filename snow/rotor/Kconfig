@@ -1,0 +1,27 @@
+#
+# For a description of the syntax of this file, see the Kconfig scripting
+# language manual at http://www.kernel.org/doc/Documentation/kbuild/kconfig-language.txt
+#
+
+config SNOW_ROTOR_APP
+	tristate "Rotor control daemon"
+	default n
+	depends on HAVE_CXX
+	---help---
+		Enable the rotor control daemon.
+
+if SNOW_ROTOR
+
+config SNOW_ROTOR_PROGNAME
+	string "Program name"
+	default "rotor"
+
+config SNOW_ROTOR_PRIORITY
+	int "Rotor daemon priority"
+	default 100
+
+config SNOW_ROTOR_STACKSIZE
+	int "Rotor daemon stack size"
+	default 2048
+
+endif

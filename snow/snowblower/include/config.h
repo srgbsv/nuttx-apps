@@ -1,0 +1,11 @@
+#ifndef SNOW_CONFIG_H
+#define SNOW_CONFIG_H
+
+//#define CONFIG_DEV_GPIO 1
+//#define CONFIG_DEV_GPIO_NSIGNALS 1
+
+#define SNOW_DEBUG 0
+#define SNOW_VERBOSE 0
+#define SNOW_TASK_PRIORITY 90
+#define SNOW_TASK_STACK_SIZE 2048
+#endif //SNOW_CONFIG_H

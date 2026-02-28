@@ -1,0 +1,11 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+config CONFIG_SNOW_APP_SNOWBLOWER
+	tristate "Snowblower application"
+	default n
+	depends on HAVE_CXX
+	---help---
+		Enable the snowblower application
