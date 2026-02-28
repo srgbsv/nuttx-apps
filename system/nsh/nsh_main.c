@@ -24,6 +24,7 @@
 
 #include <nuttx/config.h>
 
+#include <nuttx/lib/builtin.h>
 #include <errno.h>
 #include <sched.h>
 #include <stdint.h>
@@ -72,15 +73,27 @@ int main(int argc, FAR char *argv[])
 
   mount("binfs", "/bin", "binfs", MS_RDONLY, NULL);
 
+#ifdef CONFIG_SNOW_ROTOR_APP
+  /*
+   * Запуск приложения как новой задачи, а не замена текущего процесса.
+   * Это эквивалентно запуску "rotor &" из командной строки.
+   */
+  printf("Try to starting SNOW_ROTOR\n");
+  FAR char *argv_rotor[] = {"rotor", NULL};
+  exec_builtin("rotor", argv_rotor, NULL);
+#endif
+
 #ifdef CONFIG_SNOW_APP_SNOWBLOWER
-  printf ("Try to starting SNOWBLOWER\n");
-  execl("/bin/snowblower", "/bin/snowblower");
-#endif 
+  printf("Try to starting SNOWBLOWER\n");
+  FAR char *argv_snowblower[] = {"snowblower", NULL};
+  exec_builtin("snowblower", argv_snowblower, NULL);
+#endif
 
 #ifdef CONFIG_HOLDER_APP_HOLDER
-  printf ("Try to starting HOLDER\n");
-  execl("/bin/holder", "/bin/holder");
-#endif 
+  printf("Try to starting HOLDER\n");
+  FAR char *argv_holder[] = {"holder", NULL};
+  exec_builtin("holder", argv_holder, NULL);
+#endif
 
 #ifdef CONFIG_NSH_CONSOLE
   /* If the serial console front end is selected, run it on this thread */

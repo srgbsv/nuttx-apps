@@ -145,10 +145,10 @@ void EjectionController::setMotor(int value) {
     }
     _current_motor_value = value;
     if (value < -50) {
-        _motor_pwm.setDutyCycle(2);
+        _motor_pwm.setDutyCycle(3);
     } else if (value > -50 && value < 50) {
-        _motor_pwm.setDutyCycle(25);
+        _motor_pwm.setDutyCycle(6);
     } else {
-        _motor_pwm.setDutyCycle(65);
+        _motor_pwm.setDutyCycle(12);
     }
 }

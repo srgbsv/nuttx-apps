@@ -99,89 +99,6 @@ handle parameter execute opcode request
 }*/
 
 /*
-handle DNA allocation responses
-*/
-/*void CanRotorNode::handleDNAAllocation(const CanardRxTransfer& transfer, const uavcan_protocol_dynamic_node_id_Allocation& msg)
-{
-    if (_canard_iface.get_node_id() != CANARD_BROADCAST_NODE_ID) {
-        // already allocated
-        return;
-    }
-
-    // Rule C - updating the randomized time interval
-    DNA.send_next_node_id_allocation_request_at_ms =
-        SystemTools::millis32() + UAVCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_MIN_REQUEST_PERIOD_MS +
-        (random() % UAVCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_MAX_FOLLOWUP_DELAY_MS);
-
-    if (transfer.source_node_id == CANARD_BROADCAST_NODE_ID) {
-        printf("Allocation request from another allocatee\n");
-        DNA.node_id_allocation_unique_id_offset = 0;
-        return;
-    }
-
-    // Obtaining the local unique ID
-    uint8_t my_unique_id[sizeof(msg.unique_id.data)];
-    SystemTools::getUniqueID(my_unique_id);
-
-    // Matching the received UID against the local one
-    if (memcmp(msg.unique_id.data, my_unique_id, msg.unique_id.len) != 0) {
-        printf("Mismatching allocation response\n");
-        DNA.node_id_allocation_unique_id_offset = 0;
-        // No match, return
-        return;
-    }
-
-    if (msg.unique_id.len < sizeof(msg.unique_id.data)) {
-        // The allocator has confirmed part of unique ID, switching to
-        // the next stage and updating the timeout.
-        DNA.node_id_allocation_unique_id_offset = msg.unique_id.len;
-        DNA.send_next_node_id_allocation_request_at_ms -= UAVCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_MIN_REQUEST_PERIOD_MS;
-
-        printf("Matching allocation response: %d\n", msg.unique_id.len);
-    } else {
-        // Allocation complete - copying the allocated node ID from the message
-        _canard_iface.set_node_id(msg.node_id);
-        printf("Node ID allocated: %d\n", msg.node_id);
-    }
-}*/
-
-/*
-ask for a dynamic node allocation
-*/
-/*void CanRotorNode::requestDNA()
-{
-    const uint32_t now = SystemTools::millis32();
-
-    DNA.send_next_node_id_allocation_request_at_ms =
-        now + UAVCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_MIN_REQUEST_PERIOD_MS +
-        (random() % UAVhandleActuatorListCommandCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_MAX_FOLLOWUP_DELAY_MS);
-
-    uint8_t my_unique_id[16];
-    SystemTools::getUniqueID(my_unique_id);
-    
-    // send allocation message
-    uavcan_protocol_dynamic_node_id_Allocation req {};
-
-    req.node_id = PREFERRED_NODE_ID;
-    req.first_part_of_unique_id = (DNA.node_id_allocation_unique_id_offset == 0);
-
-    static const uint8_t MaxLenOfUniqueIDInRequest = 6;
-    uint8_t uid_size = (uint8_t)(16 - DNA.node_id_allocation_unique_id_offset);
-    
-    if (uid_size > MaxLenOfUniqueIDInRequest) {
-        uid_size = MaxLenOfUniqueIDInRequest;
-    }
-
-    req.unique_id.len = uid_size;
-    memcpy(req.unique_id.data, &my_unique_id[DNA.node_id_allocation_unique_id_offset], uid_size);
-
-    // Preparing for timeout; if response is received, this value will be updated from the callback.
-    DNA.node_id_allocation_unique_id_offset = 0;
-
-    allocation_pub.broadcast(req);
-}*/
-
-/*
 send the 1Hz NodeStatus message. This is what allows a node to show
 up in the DroneCAN GUI tool and in the flight controller logs
 */
@@ -251,14 +168,6 @@ void CanRotorNode::run()
 
         const uint64_t ts = SystemTools::micros64();
 
-        // see if we are still doing DNA
-        /*if (_canard_iface.get_node_id() == CANARD_BROADCAST_NODE_ID) {
-            // we're still waiting for a DNA allocation of our node ID
-            if (SystemTools::millis32() > DNA.send_next_node_id_allocation_request_at_ms) {
-                requestDNA();
-            }
-            continue;
-        }*/
 
         if (ts >= next_1hz_service_at) {
             next_1hz_service_at += 1000000ULL;

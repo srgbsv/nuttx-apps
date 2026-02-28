@@ -67,9 +67,13 @@ int MainController::stopCommand () {
 
 int MainController::startMain (int argc, char** argv) {
     snowdebug ("Start main\n");
-    if (argc <= 1 || strcmp (argv[1], "-h") == 0 || strcmp (argv[1], "help") == 0
+    /*if (argc <= 1 || strcmp (argv[1], "-h") == 0 || strcmp (argv[1], "help") == 0
         || strcmp (argv[1], "info") == 0 || strcmp (argv[1], "usage") == 0) {
         MainController::printUsage ();
+        return 0;
+    }*/
+    if (argc <= 1) {
+        MainController::startCommand (argc - 1, argv + 1);
         return 0;
     }
 
@@ -90,7 +94,7 @@ int MainController::startMain (int argc, char** argv) {
         return MainController::statusCommand();
     }
 
-    printUsage();
+    MainController::printUsage();
     return 0;
 }
 
@@ -261,6 +265,11 @@ void MainController::stop() {
 }
 
 void MainController::printUsage() {
+    snowinfo("Usage: rotor [COMMAND]\n");
+    snowinfo("Commands:\n");
+    snowinfo("  start   - Start the rotor control task\n");
+    snowinfo("  stop    - Stop the rotor control task\n");
+    snowinfo("  status  - Show the status of the rotor control task\n");
 }
 
 void MainController::printUsage(const char *reason) {
